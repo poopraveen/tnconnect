@@ -22,6 +22,7 @@ import Image from "next/image";
 import {
   formatPrice, getPropertyTypeLabel, getFurnishingLabel, timeAgo,
 } from "@/lib/utils";
+import { brand } from "@/lib/brand";
 
 interface PageProps {
   params: { id: string };
@@ -356,7 +357,7 @@ export default async function PropertyDetailPage({ params }: PageProps) {
                 <li>• Never pay advance without visiting the property</li>
                 <li>• Verify all documents before making payment</li>
                 <li>• Meet seller at the property location</li>
-                <li>• Use TrustNest's secure payment gateway</li>
+                <li>• Use the {brand.name} secure payment gateway</li>
               </ul>
             </div>
           </div>

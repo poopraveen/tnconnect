@@ -16,9 +16,10 @@ import PropertyCard from "@/components/PropertyCard";
 import { formatPrice, INDIAN_CITIES } from "@/lib/utils";
 import type { Property } from "@/types";
 import SearchBar from "@/components/SearchBar";
+import { brand, pageTitleWithTagline } from "@/lib/brand";
 
 export const metadata: Metadata = {
-  title: "TrustNest – India's Most Trusted Real Estate Platform",
+  title: pageTitleWithTagline(),
 };
 
 async function getFeaturedProperties() {
@@ -229,7 +230,7 @@ export default async function HomePage() {
       {/* How It Works */}
       <section className="py-14 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="text-center mb-12">
-          <h2 className="section-title">How TrustNest Works</h2>
+          <h2 className="section-title">How {brand.name} works</h2>
           <p className="section-subtitle">Simple, transparent, trusted</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

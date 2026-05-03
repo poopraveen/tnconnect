@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { Home, Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin, Youtube } from "lucide-react";
+import { BrandWordmark } from "@/components/BrandWordmark";
+import { brand } from "@/lib/brand";
 
 const CITIES = ["Mumbai", "Delhi", "Bangalore", "Hyderabad", "Chennai", "Pune", "Kolkata", "Ahmedabad"];
 
@@ -14,9 +16,7 @@ export default function Footer() {
               <div className="w-8 h-8 bg-hero-gradient rounded-lg flex items-center justify-center">
                 <Home className="w-4 h-4 text-white" />
               </div>
-              <span className="text-xl font-bold text-white">
-                Trust<span className="text-brand-orange">Nest</span>
-              </span>
+              <BrandWordmark className="text-xl text-white" prefixClassName="text-white" />
             </div>
             <p className="text-sm text-slate-400 leading-relaxed mb-6 max-w-xs">
               India's most trusted real estate platform. Find verified properties for sale and rent
@@ -85,7 +85,7 @@ export default function Footer() {
               <li className="flex items-start gap-3">
                 <MapPin className="w-4 h-4 text-brand-orange flex-shrink-0 mt-0.5" />
                 <span className="text-sm text-slate-400">
-                  TrustNest HQ, Bandra Kurla Complex, Mumbai 400051
+                  {brand.officeAddress}
                 </span>
               </li>
               <li className="flex items-center gap-3">
@@ -96,8 +96,11 @@ export default function Footer() {
               </li>
               <li className="flex items-center gap-3">
                 <Mail className="w-4 h-4 text-brand-orange flex-shrink-0" />
-                <a href="mailto:support@trustnest.in" className="text-sm text-slate-400 hover:text-white transition-colors">
-                  support@trustnest.in
+                <a
+                  href={`mailto:${brand.supportEmail}`}
+                  className="text-sm text-slate-400 hover:text-white transition-colors"
+                >
+                  {brand.supportEmail}
                 </a>
               </li>
             </ul>
@@ -106,7 +109,7 @@ export default function Footer() {
 
         <div className="border-t border-primary-900 mt-10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-sm text-slate-500">
-            © {new Date().getFullYear()} TrustNest. All rights reserved.
+            © {new Date().getFullYear()} {brand.name}. All rights reserved.
           </p>
           <div className="flex gap-6">
             {[

@@ -1,32 +1,32 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
+import { brand, pageTitleWithTagline } from "@/lib/brand";
 
 export const metadata: Metadata = {
   title: {
-    default: "TrustNest – India's Most Trusted Real Estate Platform",
-    template: "%s | TrustNest",
+    default: pageTitleWithTagline(),
+    template: `%s | ${brand.name}`,
   },
-  description:
-    "Find your dream home with TrustNest. Buy, sell, or rent apartments, villas, plots, and commercial properties across India. Verified listings, AI recommendations, and transparent pricing.",
+  description: brand.metaDescription,
   keywords: [
     "real estate india", "buy property", "rent property", "apartments",
     "villas", "plots", "property listing", "housing", "home buying",
   ],
-  authors: [{ name: "TrustNest" }],
+  authors: [{ name: brand.name }],
   openGraph: {
     type: "website",
     locale: "en_IN",
     url: process.env.NEXT_PUBLIC_APP_URL,
-    siteName: "TrustNest",
-    title: "TrustNest – India's Most Trusted Real Estate Platform",
-    description: "Buy, sell, or rent verified properties across India.",
+    siteName: brand.name,
+    title: pageTitleWithTagline(),
+    description: `Buy, sell, or rent verified properties across India with ${brand.name}.`,
     images: [{ url: "/og-image.jpg", width: 1200, height: 630 }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "TrustNest – Real Estate Platform",
-    description: "Find your dream home with TrustNest.",
+    title: `${brand.name} – Real Estate Platform`,
+    description: brand.metaDescription.slice(0, 200),
   },
   robots: { index: true, follow: true },
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),

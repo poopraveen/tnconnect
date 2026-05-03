@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { Mail, Lock, Eye, EyeOff, User, Phone, Loader2, Building2, Home } from "lucide-react";
 import { toast } from "@/components/ui/Toaster";
+import { brand } from "@/lib/brand";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -57,7 +58,7 @@ export default function RegisterPage() {
       <div className="bg-white rounded-2xl shadow-2xl p-8">
         <div className="text-center mb-6">
           <h1 className="text-2xl font-bold text-slate-800">Create your account</h1>
-          <p className="text-slate-500 mt-1 text-sm">Join 50,000+ users on TrustNest</p>
+          <p className="text-slate-500 mt-1 text-sm">Join 50,000+ users on {brand.name}</p>
         </div>
 
         {/* Role selection */}

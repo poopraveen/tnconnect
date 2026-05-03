@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { Mail, Lock, Eye, EyeOff, Loader2, Chrome } from "lucide-react";
 import { toast } from "@/components/ui/Toaster";
+import { brand } from "@/lib/brand";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -49,7 +50,7 @@ export default function LoginPage() {
       <div className="bg-white rounded-2xl shadow-2xl p-8">
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-slate-800">Welcome back</h1>
-          <p className="text-slate-500 mt-1 text-sm">Sign in to your TrustNest account</p>
+          <p className="text-slate-500 mt-1 text-sm">Sign in to your {brand.name} account</p>
         </div>
 
         {/* Google */}
