@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { deserializeProperty, serializeProperty } from "@/lib/db";
 import { z } from "zod";
 
 const PropertySchema = z.object({
@@ -49,7 +50,7 @@ export async function GET(req: NextRequest) {
   const maxPrice = searchParams.get("maxPrice");
   const sellerId = searchParams.get("sellerId");
 
-  if (city) where.city = { contains: city, mode: "insensitive" };
+  if (city) where.city = { contains: city };
   if (listingType) where.listingType = listingType;
   if (propertyTypes.length > 0) where.propertyType = { in: propertyTypes };
   if (bhks.length > 0) where.bhk = { in: bhks };
@@ -61,9 +62,9 @@ export async function GET(req: NextRequest) {
   }
   if (search) {
     where.OR = [
-      { title: { contains: search, mode: "insensitive" } },
-      { locality: { contains: search, mode: "insensitive" } },
-      { city: { contains: search, mode: "insensitive" } },
+      { title: { contains: search } },
+      { locality: { contains: search } },
+      { city: { contains: search } },
     ];
   }
 
@@ -81,7 +82,7 @@ export async function GET(req: NextRequest) {
   ]);
 
   return NextResponse.json({
-    data: properties,
+    data: properties.map(deserializeProperty),
     total,
     page,
     limit,
@@ -104,13 +105,13 @@ export async function POST(req: NextRequest) {
 
     const property = await prisma.property.create({
       data: {
-        ...data,
+        ...serializeProperty(data),
         sellerId: session.user.id,
         status: session.user.role === "ADMIN" ? "APPROVED" : "PENDING",
       },
     });
 
-    return NextResponse.json(property, { status: 201 });
+    return NextResponse.json(deserializeProperty(property), { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.errors[0].message }, { status: 400 });

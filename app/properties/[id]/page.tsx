@@ -9,6 +9,7 @@ import EMICalculator from "@/components/EMICalculator";
 import ChatWidget from "@/components/ChatWidget";
 import PropertyCard from "@/components/PropertyCard";
 import { prisma } from "@/lib/prisma";
+import { deserializeProperty } from "@/lib/db";
 import {
   BedDouble, Bath, Square, MapPin, Calendar, CheckCircle,
   Star, Shield, Phone, Share2, Heart, Building2, Layers,
@@ -37,11 +38,11 @@ async function getProperty(id: string) {
   // Increment views
   await prisma.property.update({ where: { id }, data: { views: { increment: 1 } } });
 
-  return property;
+  return deserializeProperty(property);
 }
 
 async function getSimilarProperties(property: any) {
-  return prisma.property.findMany({
+  const props = await prisma.property.findMany({
     where: {
       status: "APPROVED",
       id: { not: property.id },
@@ -55,6 +56,7 @@ async function getSimilarProperties(property: any) {
     take: 3,
     orderBy: { createdAt: "desc" },
   });
+  return props.map(deserializeProperty);
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {

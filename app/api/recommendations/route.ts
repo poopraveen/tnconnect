@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
     const { city, budget, bhk, propertyType, listingType, preferences } = body;
 
     const where: any = { status: "APPROVED" };
-    if (city) where.city = { contains: city, mode: "insensitive" };
+    if (city) where.city = { contains: city };
     if (listingType) where.listingType = listingType;
 
     const properties = await prisma.property.findMany({

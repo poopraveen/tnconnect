@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 import PropertyCard from "@/components/PropertyCard";
 import PropertyFilters from "@/components/PropertyFilters";
 import { prisma } from "@/lib/prisma";
+import { deserializeProperty } from "@/lib/db";
 import {
   Grid3x3, List, SortAsc, Search, LayoutGrid, Map,
   ChevronLeft, ChevronRight, SlidersHorizontal,
@@ -42,14 +43,14 @@ async function getProperties(params: PageProps["searchParams"]) {
 
   const where: any = { status: "APPROVED" };
 
-  if (params.city) where.city = { contains: params.city, mode: "insensitive" };
+  if (params.city) where.city = { contains: params.city };
   if (params.listingType) where.listingType = params.listingType;
   if (params.search) {
     where.OR = [
-      { title: { contains: params.search, mode: "insensitive" } },
-      { description: { contains: params.search, mode: "insensitive" } },
-      { locality: { contains: params.search, mode: "insensitive" } },
-      { city: { contains: params.search, mode: "insensitive" } },
+      { title: { contains: params.search } },
+      { description: { contains: params.search } },
+      { locality: { contains: params.search } },
+      { city: { contains: params.search } },
     ];
   }
 
@@ -105,7 +106,7 @@ async function getProperties(params: PageProps["searchParams"]) {
     prisma.property.count({ where }),
   ]);
 
-  return { properties, total, page, totalPages: Math.ceil(total / limit) };
+  return { properties: properties.map(deserializeProperty), total, page, totalPages: Math.ceil(total / limit) };
 }
 
 export default async function PropertiesPage({ searchParams }: PageProps) {

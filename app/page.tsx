@@ -9,6 +9,7 @@ import {
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { prisma } from "@/lib/prisma";
+import { deserializeProperty } from "@/lib/db";
 import PropertyCard from "@/components/PropertyCard";
 import { formatPrice, INDIAN_CITIES } from "@/lib/utils";
 import type { Property } from "@/types";
@@ -20,7 +21,7 @@ export const metadata: Metadata = {
 
 async function getFeaturedProperties() {
   try {
-    return await prisma.property.findMany({
+    const props = await prisma.property.findMany({
       where: { status: "APPROVED", featured: true },
       include: {
         seller: { select: { id: true, name: true, email: true, phone: true, avatar: true, isVerified: true } },
@@ -28,6 +29,7 @@ async function getFeaturedProperties() {
       orderBy: { createdAt: "desc" },
       take: 6,
     });
+    return props.map(deserializeProperty);
   } catch {
     return [];
   }
