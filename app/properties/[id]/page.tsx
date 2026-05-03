@@ -86,11 +86,11 @@ export default async function PropertyDetailPage({ params }: PageProps) {
   const similar = await getSimilarProperties(property);
 
   const amenityGroups = [
-    { label: "Indoor", items: property.amenities.filter(a => ["Gym", "Club House", "Indoor Games", "Library"].includes(a)) },
-    { label: "Outdoor", items: property.amenities.filter(a => ["Swimming Pool", "Garden", "Jogging Track", "Tennis Court", "Basketball Court"].includes(a)) },
-    { label: "Safety", items: property.amenities.filter(a => ["24/7 Security", "CCTV Surveillance", "Fire Safety", "Intercom"].includes(a)) },
-    { label: "Utilities", items: property.amenities.filter(a => !["Gym", "Club House", "Indoor Games", "Library", "Swimming Pool", "Garden", "Jogging Track", "Tennis Court", "Basketball Court", "24/7 Security", "CCTV Surveillance", "Fire Safety", "Intercom"].includes(a)) },
-  ].filter(g => g.items.length > 0);
+    { label: "Indoor", items: property.amenities.filter((a: string) => ["Gym", "Club House", "Indoor Games", "Library"].includes(a)) },
+    { label: "Outdoor", items: property.amenities.filter((a: string) => ["Swimming Pool", "Garden", "Jogging Track", "Tennis Court", "Basketball Court"].includes(a)) },
+    { label: "Safety", items: property.amenities.filter((a: string) => ["24/7 Security", "CCTV Surveillance", "Fire Safety", "Intercom"].includes(a)) },
+    { label: "Utilities", items: property.amenities.filter((a: string) => !["Gym", "Club House", "Indoor Games", "Library", "Swimming Pool", "Garden", "Jogging Track", "Tennis Court", "Basketball Court", "24/7 Security", "CCTV Surveillance", "Fire Safety", "Intercom"].includes(a)) },
+  ].filter((g) => g.items.length > 0);
 
   return (
     <div className="min-h-screen bg-surface">
@@ -208,7 +208,7 @@ export default async function PropertyDetailPage({ params }: PageProps) {
                       <div key={group.label}>
                         <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">{group.label}</p>
                         <div className="flex flex-wrap gap-2">
-                          {group.items.map((a) => (
+                          {group.items.map((a: string) => (
                             <span key={a} className="flex items-center gap-1.5 px-3 py-1.5 bg-primary-50 text-primary-700 rounded-full text-xs font-medium border border-primary-100">
                               <CheckCircle className="w-3 h-3" />
                               {a}
@@ -220,7 +220,7 @@ export default async function PropertyDetailPage({ params }: PageProps) {
                   </div>
                 ) : (
                   <div className="flex flex-wrap gap-2">
-                    {property.amenities.map((a) => (
+                    {property.amenities.map((a: string) => (
                       <span key={a} className="flex items-center gap-1.5 px-3 py-1.5 bg-primary-50 text-primary-700 rounded-full text-xs font-medium">
                         <CheckCircle className="w-3 h-3" />
                         {a}

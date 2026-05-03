@@ -43,14 +43,14 @@ async function getProperties(params: PageProps["searchParams"]) {
 
   const where: any = { status: "APPROVED" };
 
-  if (params.city) where.city = { contains: params.city };
+  if (params.city) where.city = { contains: params.city, mode: "insensitive" };
   if (params.listingType) where.listingType = params.listingType;
   if (params.search) {
     where.OR = [
-      { title: { contains: params.search } },
-      { description: { contains: params.search } },
-      { locality: { contains: params.search } },
-      { city: { contains: params.search } },
+      { title: { contains: params.search, mode: "insensitive" } },
+      { description: { contains: params.search, mode: "insensitive" } },
+      { locality: { contains: params.search, mode: "insensitive" } },
+      { city: { contains: params.search, mode: "insensitive" } },
     ];
   }
 

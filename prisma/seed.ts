@@ -1,4 +1,10 @@
-import { PrismaClient } from "@prisma/client";
+import {
+  PrismaClient,
+  PropertyType,
+  ListingType,
+  PropertyStatus,
+  Furnishing,
+} from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
@@ -72,10 +78,10 @@ async function main() {
       bhk: 3,
       bathrooms: 3,
       area: 1450,
-      propertyType: "APARTMENT",
-      listingType: "BUY",
-      furnishing: "FULLY_FURNISHED",
-      status: "APPROVED",
+      propertyType: PropertyType.APARTMENT,
+      listingType: ListingType.BUY,
+      furnishing: Furnishing.FULLY_FURNISHED,
+      status: PropertyStatus.APPROVED,
       verified: true,
       featured: true,
       parking: true,
@@ -96,10 +102,10 @@ async function main() {
       bhk: 2,
       bathrooms: 2,
       area: 1100,
-      propertyType: "APARTMENT",
-      listingType: "BUY",
-      furnishing: "SEMI_FURNISHED",
-      status: "APPROVED",
+      propertyType: PropertyType.APARTMENT,
+      listingType: ListingType.BUY,
+      furnishing: Furnishing.SEMI_FURNISHED,
+      status: PropertyStatus.APPROVED,
       verified: true,
       featured: false,
       parking: true,
@@ -120,10 +126,10 @@ async function main() {
       bhk: 4,
       bathrooms: 4,
       area: 3500,
-      propertyType: "VILLA",
-      listingType: "BUY",
-      furnishing: "FULLY_FURNISHED",
-      status: "APPROVED",
+      propertyType: PropertyType.VILLA,
+      listingType: ListingType.BUY,
+      furnishing: Furnishing.FULLY_FURNISHED,
+      status: PropertyStatus.APPROVED,
       verified: true,
       featured: true,
       parking: true,
@@ -144,10 +150,10 @@ async function main() {
       bhk: 1,
       bathrooms: 1,
       area: 650,
-      propertyType: "APARTMENT",
-      listingType: "RENT",
-      furnishing: "SEMI_FURNISHED",
-      status: "APPROVED",
+      propertyType: PropertyType.APARTMENT,
+      listingType: ListingType.RENT,
+      furnishing: Furnishing.SEMI_FURNISHED,
+      status: PropertyStatus.APPROVED,
       verified: false,
       featured: false,
       parking: false,
@@ -166,10 +172,10 @@ async function main() {
       bhk: 3,
       bathrooms: 3,
       area: 2200,
-      propertyType: "INDEPENDENT_HOUSE",
-      listingType: "BUY",
-      furnishing: "UNFURNISHED",
-      status: "APPROVED",
+      propertyType: PropertyType.INDEPENDENT_HOUSE,
+      listingType: ListingType.BUY,
+      furnishing: Furnishing.UNFURNISHED,
+      status: PropertyStatus.APPROVED,
       verified: true,
       featured: false,
       parking: true,
@@ -188,10 +194,10 @@ async function main() {
       bhk: 1,
       bathrooms: 2,
       area: 1200,
-      propertyType: "COMMERCIAL",
-      listingType: "RENT",
-      furnishing: "UNFURNISHED",
-      status: "APPROVED",
+      propertyType: PropertyType.COMMERCIAL,
+      listingType: ListingType.RENT,
+      furnishing: Furnishing.UNFURNISHED,
+      status: PropertyStatus.APPROVED,
       verified: true,
       featured: true,
       parking: true,
@@ -201,14 +207,8 @@ async function main() {
   ];
 
   for (const prop of properties) {
-    const { images, amenities, ...rest } = prop as any;
     await prisma.property.create({
-      data: {
-        ...rest,
-        images: JSON.stringify(images ?? []),
-        amenities: JSON.stringify(amenities ?? []),
-        sellerId: seller.id,
-      },
+      data: { ...prop, sellerId: seller.id },
     });
   }
 

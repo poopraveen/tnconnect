@@ -3,15 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
-
-// Role: "BUYER" | "SELLER" | "ADMIN"
-// PropertyType: "APARTMENT" | "VILLA" | "INDEPENDENT_HOUSE" | "PLOT" | "COMMERCIAL" | "PG" | "STUDIO"
-// ListingType: "BUY" | "RENT"
-// PropertyStatus: "PENDING" | "APPROVED" | "REJECTED" | "SOLD" | "RENTED"
-// Furnishing: "FULLY_FURNISHED" | "SEMI_FURNISHED" | "UNFURNISHED"
 
 model User {
   id            String    @id @default(cuid())
@@ -21,7 +15,7 @@ model User {
   password      String?
   phone         String?
   avatar        String?
-  role          String    @default("BUYER")
+  role          Role      @default(BUYER)
   isVerified    Boolean   @default(false)
   bio           String?
   createdAt     DateTime  @default(now())
@@ -42,12 +36,12 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String?
-  access_token      String?
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String?
+  id_token          String? @db.Text
   session_state     String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -72,11 +66,11 @@ model VerificationToken {
 }
 
 model Property {
-  id              String   @id @default(cuid())
+  id              String          @id @default(cuid())
   title           String
-  description     String
+  description     String          @db.Text
   price           Float
-  priceNegotiable Boolean  @default(false)
+  priceNegotiable Boolean         @default(false)
   address         String
   locality        String
   city            String
@@ -87,22 +81,22 @@ model Property {
   bhk             Int
   bathrooms       Int
   area            Float
-  areaUnit        String   @default("sqft")
+  areaUnit        String          @default("sqft")
   floor           Int?
   totalFloors     Int?
-  propertyType    String   // "APARTMENT"|"VILLA"|"INDEPENDENT_HOUSE"|"PLOT"|"COMMERCIAL"|"PG"|"STUDIO"
-  listingType     String   // "BUY"|"RENT"
-  status          String   @default("PENDING")
-  furnishing      String   @default("UNFURNISHED")
-  parking         Boolean  @default(false)
-  images          String   @default("[]")   // JSON array
-  amenities       String   @default("[]")   // JSON array
+  propertyType    PropertyType
+  listingType     ListingType
+  status          PropertyStatus  @default(PENDING)
+  furnishing      Furnishing      @default(UNFURNISHED)
+  parking         Boolean         @default(false)
+  images          String[]
+  amenities       String[]
   facing          String?
   ageOfProperty   Int?
   availableFrom   DateTime?
-  verified        Boolean  @default(false)
-  views           Int      @default(0)
-  featured        Boolean  @default(false)
+  verified        Boolean         @default(false)
+  views           Int             @default(0)
+  featured        Boolean         @default(false)
 
   sellerId String
   seller   User   @relation(fields: [sellerId], references: [id])
@@ -113,6 +107,46 @@ model Property {
   savedBy   SavedProperty[]
   chatRooms ChatRoom[]
   reviews   Review[]
+
+  @@index([city, status])
+  @@index([listingType, status])
+  @@index([price])
+  @@index([bhk])
+}
+
+enum Role {
+  BUYER
+  SELLER
+  ADMIN
+}
+
+enum PropertyType {
+  APARTMENT
+  VILLA
+  INDEPENDENT_HOUSE
+  PLOT
+  COMMERCIAL
+  PG
+  STUDIO
+}
+
+enum ListingType {
+  BUY
+  RENT
+}
+
+enum PropertyStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SOLD
+  RENTED
+}
+
+enum Furnishing {
+  FULLY_FURNISHED
+  SEMI_FURNISHED
+  UNFURNISHED
 }
 
 model SavedProperty {

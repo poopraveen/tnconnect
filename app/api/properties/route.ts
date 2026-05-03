@@ -50,7 +50,7 @@ export async function GET(req: NextRequest) {
   const maxPrice = searchParams.get("maxPrice");
   const sellerId = searchParams.get("sellerId");
 
-  if (city) where.city = { contains: city };
+  if (city) where.city = { contains: city, mode: "insensitive" };
   if (listingType) where.listingType = listingType;
   if (propertyTypes.length > 0) where.propertyType = { in: propertyTypes };
   if (bhks.length > 0) where.bhk = { in: bhks };
@@ -62,9 +62,9 @@ export async function GET(req: NextRequest) {
   }
   if (search) {
     where.OR = [
-      { title: { contains: search } },
-      { locality: { contains: search } },
-      { city: { contains: search } },
+      { title: { contains: search, mode: "insensitive" } },
+      { locality: { contains: search, mode: "insensitive" } },
+      { city: { contains: search, mode: "insensitive" } },
     ];
   }
 
