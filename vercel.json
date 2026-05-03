@@ -1,4 +1,9 @@
 {
-  "buildCommand": "DATABASE_URL=${DATABASE_URL:-postgresql://placeholder} prisma generate && next build",
-  "framework": "nextjs"
+  "buildCommand": "prisma generate && next build",
+  "framework": "nextjs",
+  "build": {
+    "env": {
+      "DATABASE_URL": "postgresql://placeholder:placeholder@placeholder.example.com/placeholder"
+    }
+  }
 }
