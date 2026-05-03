@@ -1,0 +1,198 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  password      String?
+  phone         String?
+  avatar        String?
+  role          Role      @default(BUYER)
+  isVerified    Boolean   @default(false)
+  bio           String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts        Account[]
+  sessions        Session[]
+  properties      Property[]
+  savedProperties SavedProperty[]
+  sentMessages    Message[]       @relation("SentMessages")
+  chatRoomsAsBuyer ChatRoom[]    @relation("BuyerChats")
+  reviews         Review[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Property {
+  id            String          @id @default(cuid())
+  title         String
+  description   String          @db.Text
+  price         Float
+  priceNegotiable Boolean       @default(false)
+  address       String
+  locality      String
+  city          String
+  state         String
+  pincode       String
+  latitude      Float?
+  longitude     Float?
+  bhk           Int
+  bathrooms     Int
+  area          Float
+  areaUnit      String          @default("sqft")
+  floor         Int?
+  totalFloors   Int?
+  propertyType  PropertyType
+  listingType   ListingType
+  status        PropertyStatus  @default(PENDING)
+  furnishing    Furnishing      @default(UNFURNISHED)
+  parking       Boolean         @default(false)
+  images        String[]
+  amenities     String[]
+  facing        String?
+  ageOfProperty Int?
+  availableFrom DateTime?
+  verified      Boolean         @default(false)
+  views         Int             @default(0)
+  featured      Boolean         @default(false)
+
+  sellerId String
+  seller   User   @relation(fields: [sellerId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  savedBy   SavedProperty[]
+  chatRooms ChatRoom[]
+  reviews   Review[]
+
+  @@index([city, status])
+  @@index([listingType, status])
+  @@index([price])
+  @@index([bhk])
+}
+
+enum Role {
+  BUYER
+  SELLER
+  ADMIN
+}
+
+enum PropertyType {
+  APARTMENT
+  VILLA
+  INDEPENDENT_HOUSE
+  PLOT
+  COMMERCIAL
+  PG
+  STUDIO
+}
+
+enum ListingType {
+  BUY
+  RENT
+}
+
+enum PropertyStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SOLD
+  RENTED
+}
+
+enum Furnishing {
+  FULLY_FURNISHED
+  SEMI_FURNISHED
+  UNFURNISHED
+}
+
+model SavedProperty {
+  id         String   @id @default(cuid())
+  userId     String
+  propertyId String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, propertyId])
+}
+
+model ChatRoom {
+  id         String    @id @default(cuid())
+  propertyId String
+  buyerId    String
+  property   Property  @relation(fields: [propertyId], references: [id])
+  buyer      User      @relation("BuyerChats", fields: [buyerId], references: [id])
+  messages   Message[]
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@unique([propertyId, buyerId])
+}
+
+model Message {
+  id         String   @id @default(cuid())
+  content    String
+  senderId   String
+  chatRoomId String
+  read       Boolean  @default(false)
+  sender     User     @relation("SentMessages", fields: [senderId], references: [id])
+  chatRoom   ChatRoom @relation(fields: [chatRoomId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  rating     Int
+  comment    String?
+  userId     String
+  propertyId String
+  user       User     @relation(fields: [userId], references: [id])
+  property   Property @relation(fields: [propertyId], references: [id])
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, propertyId])
+}
