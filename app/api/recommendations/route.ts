@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAIRecommendations } from "@/lib/openai";
@@ -21,7 +23,6 @@ export async function POST(req: NextRequest) {
     });
 
     if (!process.env.OPENAI_API_KEY) {
-      // Fallback: simple rule-based recommendations
       const scored = properties
         .map((p) => {
           let score = 0;
