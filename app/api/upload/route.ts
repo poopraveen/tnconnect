@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { uploadToS3 } from "@/lib/s3";
-import { randomUUID } from "crypto";
+import { resolveUploadBackend, uploadPropertyImage } from "@/lib/uploads";
 
 const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 const MAX_SIZE = 5 * 1024 * 1024; // 5MB
@@ -28,14 +27,27 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "File too large (max 5MB)" }, { status: 400 });
   }
 
+  if (!resolveUploadBackend()) {
+    console.error(
+      "Upload: configure S3 (AWS_*) or Cloudinary (CLOUDINARY_*), or set UPLOAD_PROVIDER=s3|cloudinary"
+    );
+    return NextResponse.json(
+      {
+        error:
+          "Upload is not configured. Set AWS S3 env vars and/or Cloudinary (see .env.example).",
+      },
+      { status: 503 }
+    );
+  }
+
   try {
     const buffer = Buffer.from(await file.arrayBuffer());
     const ext = file.name.split(".").pop() ?? "jpg";
-    const key = `properties/${session.user.id}/${randomUUID()}.${ext}`;
-    const url = await uploadToS3(buffer, key, file.type);
+    const { url } = await uploadPropertyImage(buffer, file.type, session.user.id, ext);
     return NextResponse.json({ url });
   } catch (error) {
-    console.error("S3 upload error:", error);
+    const err = error as Error & { name?: string; Code?: string; $metadata?: { httpStatusCode?: number } };
+    console.error("Upload error:", err.name, err.message, (err as { Code?: string }).Code ?? err.$metadata);
     return NextResponse.json({ error: "Upload failed" }, { status: 500 });
   }
 }
