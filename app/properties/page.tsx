@@ -9,9 +9,10 @@ import PropertyFilters from "@/components/PropertyFilters";
 import { prisma } from "@/lib/prisma";
 import { deserializeProperty } from "@/lib/db";
 import {
-  Grid3x3, List, SortAsc, Search, LayoutGrid, Map,
-  ChevronLeft, ChevronRight, SlidersHorizontal,
+  List, Search, LayoutGrid,
+  ChevronLeft, ChevronRight,
 } from "lucide-react";
+import SortDropdown from "./SortDropdown";
 import Link from "next/link";
 import { formatPrice } from "@/lib/utils";
 import type { PropertyFilters as Filters } from "@/types";
@@ -140,7 +141,7 @@ export default async function PropertiesPage({ searchParams }: PageProps) {
             </div>
             <div className="flex items-center gap-3">
               {/* Sort */}
-              <SortDropdown current={searchParams.sortBy} searchParams={searchParams} />
+              <Suspense><SortDropdown current={searchParams.sortBy} /></Suspense>
               {/* View toggle */}
               <ViewToggle current={view} searchParams={searchParams} />
             </div>
@@ -196,44 +197,6 @@ export default async function PropertiesPage({ searchParams }: PageProps) {
   );
 }
 
-function SortDropdown({
-  current,
-  searchParams,
-}: {
-  current?: string;
-  searchParams: Record<string, any>;
-}) {
-  const options = [
-    { value: "newest", label: "Newest First" },
-    { value: "price_asc", label: "Price: Low to High" },
-    { value: "price_desc", label: "Price: High to Low" },
-    { value: "area_asc", label: "Area: Small to Large" },
-    { value: "area_desc", label: "Area: Large to Small" },
-  ];
-
-  return (
-    <div className="flex items-center gap-2">
-      <SortAsc className="w-4 h-4 text-slate-400" />
-      <select
-        defaultValue={current ?? "newest"}
-        className="text-sm border border-slate-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary-400 bg-white"
-        onChange={(e) => {
-          const params = new URLSearchParams(
-            Object.entries(searchParams)
-              .filter(([_, v]) => v !== undefined)
-              .map(([k, v]) => [k, String(v)])
-          );
-          params.set("sortBy", e.target.value);
-          window.location.href = `/properties?${params.toString()}`;
-        }}
-      >
-        {options.map((opt) => (
-          <option key={opt.value} value={opt.value}>{opt.label}</option>
-        ))}
-      </select>
-    </div>
-  );
-}
 
 function ViewToggle({
   current,
