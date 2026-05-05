@@ -3,7 +3,6 @@ import { Home, Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin, Yout
 import { BrandWordmark } from "@/components/BrandWordmark";
 import { brand } from "@/lib/brand";
 
-const CITIES = ["Mumbai", "Delhi", "Bangalore", "Hyderabad", "Chennai", "Pune", "Kolkata", "Ahmedabad"];
 
 export default function Footer() {
   return (
@@ -19,14 +18,21 @@ export default function Footer() {
               <BrandWordmark className="text-xl text-white" prefixClassName="text-white" />
             </div>
             <p className="text-sm text-slate-400 leading-relaxed mb-6 max-w-xs">
-              India's most trusted real estate platform. Find verified properties for sale and rent
-              across 50+ cities with AI-powered recommendations.
+              {brand.footerDescription}
             </p>
             <div className="flex gap-3">
-              {[Facebook, Twitter, Instagram, Linkedin, Youtube].map((Icon, i) => (
+              {([
+                [Facebook,  brand.social.facebook],
+                [Twitter,   brand.social.twitter],
+                [Instagram, brand.social.instagram],
+                [Linkedin,  brand.social.linkedin],
+                [Youtube,   brand.social.youtube],
+              ] as const).filter(([, href]) => href && href !== "").map(([Icon, href], i) => (
                 <a
                   key={i}
-                  href="#"
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="w-8 h-8 rounded-lg bg-primary-900 flex items-center justify-center text-slate-400 hover:text-white hover:bg-primary-700 transition-colors"
                 >
                   <Icon className="w-4 h-4" />
@@ -63,7 +69,7 @@ export default function Footer() {
               Top Cities
             </h3>
             <ul className="space-y-2.5">
-              {CITIES.map((city) => (
+              {brand.footerCities.map((city) => (
                 <li key={city}>
                   <Link
                     href={`/properties?city=${city}`}
@@ -90,8 +96,8 @@ export default function Footer() {
               </li>
               <li className="flex items-center gap-3">
                 <Phone className="w-4 h-4 text-brand-orange flex-shrink-0" />
-                <a href="tel:+911800123456" className="text-sm text-slate-400 hover:text-white transition-colors">
-                  1800-123-4567 (Toll Free)
+                <a href={`tel:${brand.phone.replace(/[^+\d]/g, "")}`} className="text-sm text-slate-400 hover:text-white transition-colors">
+                  {brand.phone}
                 </a>
               </li>
               <li className="flex items-center gap-3">
