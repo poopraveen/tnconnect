@@ -23,6 +23,8 @@ import {
   formatPrice, getPropertyTypeLabel, getFurnishingLabel, timeAgo,
 } from "@/lib/utils";
 import { brand } from "@/lib/brand";
+import { PropertyJsonLd, BreadcrumbJsonLd } from "@/components/JsonLd";
+import LeadForm from "@/components/LeadForm";
 
 interface PageProps {
   params: { id: string };
@@ -95,8 +97,19 @@ export default async function PropertyDetailPage({ params }: PageProps) {
     { label: "Utilities", items: property.amenities.filter((a: string) => !["Gym", "Club House", "Indoor Games", "Library", "Swimming Pool", "Garden", "Jogging Track", "Tennis Court", "Basketball Court", "24/7 Security", "CCTV Surveillance", "Fire Safety", "Intercom"].includes(a)) },
   ].filter((g) => g.items.length > 0);
 
+  const BASE = brand.domain || process.env.NEXT_PUBLIC_APP_URL || "https://trustnest-tsgz.vercel.app";
+
   return (
     <div className="min-h-screen bg-surface">
+      {/* Structured data for Google rich results */}
+      <PropertyJsonLd property={property} />
+      <BreadcrumbJsonLd items={[
+        { name: "Home", url: "/" },
+        { name: "Properties", url: "/properties" },
+        { name: property.city, url: `/properties?city=${property.city}` },
+        { name: property.title, url: `/properties/${property.id}` },
+      ]} />
+
       <Navbar />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -315,6 +328,14 @@ export default async function PropertyDetailPage({ params }: PageProps) {
                 />
               </div>
             </div>
+
+            {/* Lead / Enquiry Form */}
+            <LeadForm
+              propertyId={property.id}
+              propertyTitle={property.title}
+              sellerPhone={property.seller.phone}
+              source="property-detail"
+            />
 
             {/* Quick Actions */}
             <div className="card p-5">

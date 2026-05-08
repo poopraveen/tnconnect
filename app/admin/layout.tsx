@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 import Link from "next/link";
-import { Shield, Building2, Users, BarChart3, Settings, LayoutDashboard } from "lucide-react";
+import { Shield, Building2, Users, BarChart3, Settings, LayoutDashboard, TrendingUp } from "lucide-react";
 import Navbar from "@/components/Navbar";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -22,6 +22,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             {[
               { href: "/admin", icon: LayoutDashboard, label: "Overview" },
               { href: "/admin/properties", icon: Building2, label: "Properties" },
+              { href: "/admin/leads", icon: TrendingUp, label: "Leads" },
               { href: "/admin/users", icon: Users, label: "Users" },
               { href: "/admin/analytics", icon: BarChart3, label: "Analytics" },
               { href: "/admin/settings", icon: Settings, label: "Settings" },

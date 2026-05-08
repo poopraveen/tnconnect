@@ -17,10 +17,28 @@ import Link from "next/link";
 import { formatPrice } from "@/lib/utils";
 import type { PropertyFilters as Filters } from "@/types";
 
-export const metadata: Metadata = {
-  title: "Properties – Buy & Rent Properties in India",
-  description: "Browse thousands of verified properties for sale and rent across India.",
-};
+export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
+  const city = searchParams.city;
+  const type = searchParams.listingType;
+  const propType = Array.isArray(searchParams.propertyType) ? searchParams.propertyType[0] : searchParams.propertyType;
+
+  const typeLabel = type === "BUY" ? "for Sale" : type === "RENT" ? "for Rent" : "for Sale & Rent";
+  const cityLabel = city ? ` in ${city}` : " across India";
+  const propLabel = propType ? ` ${propType.replace("_", " ").toLowerCase()}` : " property";
+
+  const title = city
+    ? `Buy & Rent Properties in ${city} | PooPrav TrustNest`
+    : `Properties for Sale & Rent in India | PooPrav TrustNest`;
+
+  const description = `Browse verified${propLabel} listings ${typeLabel}${cityLabel}. Apartments, villas, plots & more. Trusted by thousands of buyers and renters.`;
+
+  return {
+    title,
+    description,
+    openGraph: { title, description },
+    alternates: { canonical: `/properties${city ? `?city=${city}` : ""}` },
+  };
+}
 
 interface PageProps {
   searchParams: {

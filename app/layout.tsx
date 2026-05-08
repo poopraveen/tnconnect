@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
 import { brand, pageTitleWithTagline } from "@/lib/brand";
+import { OrganizationJsonLd } from "@/components/JsonLd";
 
 export const metadata: Metadata = {
   title: {
@@ -41,6 +42,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
       <body>
+        <OrganizationJsonLd />
         <Providers>{children}</Providers>
       </body>
     </html>

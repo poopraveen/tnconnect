@@ -107,6 +107,7 @@ model Property {
   savedBy   SavedProperty[]
   chatRooms ChatRoom[]
   reviews   Review[]
+  leads     Lead[]
 
   @@index([city, status])
   @@index([listingType, status])
@@ -195,4 +196,30 @@ model Review {
   createdAt  DateTime @default(now())
 
   @@unique([userId, propertyId])
+}
+
+model Lead {
+  id         String     @id @default(cuid())
+  name       String
+  phone      String
+  email      String?
+  message    String?    @db.Text
+  propertyId String
+  property   Property   @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  source     String     @default("website")
+  status     LeadStatus @default(NEW)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  @@index([propertyId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  INTERESTED
+  CONVERTED
+  CLOSED
 }
