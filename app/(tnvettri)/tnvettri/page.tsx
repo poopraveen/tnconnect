@@ -7,8 +7,6 @@ import {
   MessageSquare, FileSearch, Shield, TrendingUp,
   ChevronRight, ExternalLink, Clock,
 } from "lucide-react";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import KpiTile from "@/components/KpiTile";
 import { brand, pageTitleWithTagline } from "@/lib/brand";
 
@@ -24,6 +22,7 @@ const BUDGET_KPIS = [
     labelTamil: "மொத்த பட்ஜெட்",
     value: "₹4,12,504 Cr",
     target: "₹4,12,504 Cr",
+    progress: 78,
     delta: 12,
     deltaLabel: "vs 2023-24",
     status: "on-target" as const,
@@ -35,6 +34,7 @@ const BUDGET_KPIS = [
     labelTamil: "மூலதன செலவு",
     value: "₹47,681 Cr",
     target: "₹50,000 Cr",
+    progress: 95,
     delta: 12.1,
     deltaLabel: "YoY growth",
     status: "vulnerable" as const,
@@ -65,6 +65,7 @@ const BUDGET_KPIS = [
     labelTamil: "மகளிர் உரிமைத் தொகை",
     value: "1.31 Cr Women",
     target: "1.5 Cr",
+    progress: 87,
     delta: 16.1,
     deltaLabel: "vs Phase 1",
     status: "on-target" as const,
@@ -76,6 +77,7 @@ const BUDGET_KPIS = [
     labelTamil: "முதலமைச்சர் காலை உணவு",
     value: "20.73 Lakh",
     target: "25 Lakh",
+    progress: 83,
     delta: 30,
     deltaLabel: "attendance rise",
     status: "on-target" as const,
@@ -87,6 +89,7 @@ const BUDGET_KPIS = [
     labelTamil: "மக்களை தேடி மருத்துவம்",
     value: "1.86 Cr People",
     target: "2 Cr",
+    progress: 93,
     status: "on-target" as const,
     source: "nhm.tn.gov.in",
     lastUpdated: "Aug 2024",
@@ -129,7 +132,6 @@ const TRUST_STATS = [
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-surface">
-      <Navbar />
 
       {/* Hero — Trust Snapshot */}
       <section className="bg-hero-gradient relative overflow-hidden">
@@ -399,7 +401,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      <Footer />
     </div>
   );
 }

@@ -8,8 +8,6 @@ import {
   Building2, Home, MapPin, BedDouble, Users, CheckCircle,
   ChevronRight, Sparkles,
 } from "lucide-react";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import { prisma } from "@/lib/prisma";
 import { deserializeProperty } from "@/lib/db";
 import PropertyCard from "@/components/PropertyCard";
@@ -97,7 +95,6 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen bg-surface">
-      <Navbar />
 
       {/* Hero Section */}
       <section className="bg-hero-gradient relative overflow-hidden">
@@ -300,7 +297,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <Footer />
     </div>
   );
 }

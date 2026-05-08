@@ -2,8 +2,6 @@ export const dynamic = "force-dynamic";
 
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import PropertyCard from "@/components/PropertyCard";
 import PropertyFilters from "@/components/PropertyFilters";
 import { prisma } from "@/lib/prisma";
@@ -144,7 +142,6 @@ export default async function PropertiesPage({ searchParams }: PageProps) {
 
   return (
     <div className="min-h-screen bg-surface">
-      <Navbar />
 
       {/* Header */}
       <div className="bg-white border-b border-slate-100 py-4">
@@ -210,7 +207,6 @@ export default async function PropertiesPage({ searchParams }: PageProps) {
         </div>
       </div>
 
-      <Footer />
     </div>
   );
 }
