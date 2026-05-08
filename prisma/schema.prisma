@@ -7,6 +7,8 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ─── AUTH ────────────────────────────────────────────────────────────────────
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -15,19 +17,17 @@ model User {
   password      String?
   phone         String?
   avatar        String?
-  role          Role      @default(BUYER)
+  role          UserRole  @default(CITIZEN)
+  districtId    String?
+  district      District? @relation(fields: [districtId], references: [id])
   isVerified    Boolean   @default(false)
-  bio           String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  accounts         Account[]
-  sessions         Session[]
-  properties       Property[]
-  savedProperties  SavedProperty[]
-  sentMessages     Message[]    @relation("SentMessages")
-  chatRoomsAsBuyer ChatRoom[]   @relation("BuyerChats")
-  reviews          Review[]
+  accounts   Account[]
+  sessions   Session[]
+  grievances Grievance[]
+  auditLogs  AuditLog[]
 }
 
 model Account {
@@ -43,8 +43,7 @@ model Account {
   scope             String?
   id_token          String? @db.Text
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
@@ -65,161 +64,414 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-model Property {
+enum UserRole {
+  CITIZEN
+  OFFICER
+  ADMIN
+  AUDITOR
+}
+
+// ─── GEOGRAPHY ───────────────────────────────────────────────────────────────
+
+model District {
+  id          String  @id @default(cuid())
+  name        String  @unique
+  nameTamil   String
+  headquarters String
+  areaSqKm    Float
+  population  Int
+  latitude    Float
+  longitude   Float
+  code        String  @unique
+
+  users         User[]
+  projects      Project[]
+  grievances    Grievance[]
+  slaRecords    SLARecord[]
+  scores        LocalityScore[]
+  expenditures  ExpenditureRecord[]
+}
+
+// ─── DEPARTMENTS ─────────────────────────────────────────────────────────────
+
+model Department {
+  id          String  @id @default(cuid())
+  name        String  @unique
+  nameTamil   String
+  code        String  @unique
+  description String?
+  headName    String?
+  headTitle   String?
+
+  budgets      BudgetAllocation[]
+  projects     Project[]
+  schemes      Scheme[]
+  slaRecords   SLARecord[]
+  anomalies    AnomalyFlag[]
+  expenditures ExpenditureRecord[]
+}
+
+// ─── BUDGET ──────────────────────────────────────────────────────────────────
+
+model BudgetAllocation {
+  id               String     @id @default(cuid())
+  financialYear    String     // e.g. "2024-25"
+  departmentId     String
+  department       Department @relation(fields: [departmentId], references: [id])
+  totalAllocation  Float      // crore INR
+  released         Float      @default(0)
+  spent            Float      @default(0)
+  capitalOutlay    Float      @default(0)
+  revenueExpense   Float      @default(0)
+  source           String     @default("tnbudget.tn.gov.in")
+  lastUpdated      DateTime   @default(now())
+  createdAt        DateTime   @default(now())
+
+  @@unique([financialYear, departmentId])
+  @@index([financialYear])
+}
+
+model ExpenditureRecord {
+  id           String     @id @default(cuid())
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id])
+  districtId   String?
+  district     District?  @relation(fields: [districtId], references: [id])
+  financialYear String
+  month        Int
+  amount       Float
+  category     String
+  description  String?
+  source       String     @default("pfms.nic.in")
+  createdAt    DateTime   @default(now())
+
+  @@index([financialYear, departmentId])
+  @@index([districtId])
+}
+
+// ─── SCHEMES ─────────────────────────────────────────────────────────────────
+
+model Scheme {
+  id               String     @id @default(cuid())
+  name             String
+  nameTamil        String
+  departmentId     String
+  department       Department @relation(fields: [departmentId], references: [id])
+  description      String     @db.Text
+  launchDate       DateTime
+  beneficiaryCount Int        @default(0)
+  targetCount      Int        @default(0)
+  budgetCrore      Float
+  benefitAmount    Float?     // monthly/one-time amount per beneficiary
+  benefitFrequency String?    // "monthly", "annual", "one-time"
+  eligibility      String?    @db.Text
+  status           SchemeStatus @default(ACTIVE)
+  source           String     @default("tn.gov.in")
+  lastUpdated      DateTime   @default(now())
+  createdAt        DateTime   @default(now())
+
+  beneficiaries BeneficiaryRecord[]
+}
+
+model BeneficiaryRecord {
+  id          String   @id @default(cuid())
+  schemeId    String
+  scheme      Scheme   @relation(fields: [schemeId], references: [id])
+  districtId  String
+  month       String   // "2024-04"
+  count       Int
+  disbursed   Float    @default(0)
+  pending     Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  @@unique([schemeId, districtId, month])
+  @@index([schemeId])
+}
+
+enum SchemeStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
+}
+
+// ─── PROJECTS ────────────────────────────────────────────────────────────────
+
+model Project {
+  id             String        @id @default(cuid())
+  title          String
+  departmentId   String
+  department     Department    @relation(fields: [departmentId], references: [id])
+  districtId     String
+  district       District      @relation(fields: [districtId], references: [id])
+  block          String?
+  panchayat      String?
+  description    String        @db.Text
+  totalCost      Float
+  sanctionedCost Float
+  spentSoFar     Float         @default(0)
+  stage          ProjectStage  @default(SANCTIONED)
+  status         ProjectStatus @default(ON_TRACK)
+  contractorName String?
+  tenderNumber   String?
+  startDate      DateTime?
+  expectedEnd    DateTime?
+  actualEnd      DateTime?
+  delayReason    String?
+  latitude       Float?
+  longitude      Float?
+  geoTagged      Boolean       @default(false)
+  source         String        @default("pfms.nic.in")
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  milestones MilestoneRecord[]
+  anomalies  AnomalyFlag[]
+}
+
+model MilestoneRecord {
+  id          String           @id @default(cuid())
+  projectId   String
+  project     Project          @relation(fields: [projectId], references: [id])
+  stage       ProjectStage
+  plannedDate DateTime?
+  actualDate  DateTime?
+  status      MilestoneStatus  @default(PENDING)
+  notes       String?
+  evidenceUrl String[]
+  createdAt   DateTime         @default(now())
+}
+
+enum ProjectStage {
+  SANCTIONED
+  TENDERED
+  WORK_ORDER
+  IN_PROGRESS
+  PAYMENT_MILESTONE
+  COMPLETED
+  QUALITY_VERIFIED
+}
+
+enum ProjectStatus {
+  ON_TRACK
+  DELAYED
+  STALLED
+  COMPLETED
+}
+
+enum MilestoneStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  OVERDUE
+}
+
+// ─── LOCALITY SCORECARDS ─────────────────────────────────────────────────────
+
+model LocalityScore {
+  id                  String   @id @default(cuid())
+  districtId          String
+  district            District @relation(fields: [districtId], references: [id])
+  period              String   // "2024-Q4"
+  overallScore        Float
+  financialEfficiency Float
+  serviceDelivery     Float
+  citizenImpact       Float
+  infraQuality        Float
+  govIntegrity        Float
+  districtRank        Int?
+  stateRank           Int?
+  createdAt           DateTime @default(now())
+
+  @@unique([districtId, period])
+  @@index([period])
+}
+
+// ─── GRIEVANCES ──────────────────────────────────────────────────────────────
+
+model Grievance {
   id              String          @id @default(cuid())
+  ticketNo        String          @unique @default(cuid())
+  citizenId       String?
+  citizen         User?           @relation(fields: [citizenId], references: [id])
+  districtId      String
+  district        District        @relation(fields: [districtId], references: [id])
+  category        GrievanceCategory
   title           String
   description     String          @db.Text
-  price           Float
-  priceNegotiable Boolean         @default(false)
-  address         String
-  locality        String
-  city            String
-  state           String
-  pincode         String
-  latitude        Float?
-  longitude       Float?
-  bhk             Int
-  bathrooms       Int
-  area            Float
-  areaUnit        String          @default("sqft")
-  floor           Int?
-  totalFloors     Int?
-  propertyType    PropertyType
-  listingType     ListingType
-  status          PropertyStatus  @default(PENDING)
-  furnishing      Furnishing      @default(UNFURNISHED)
-  parking         Boolean         @default(false)
-  images          String[]
-  amenities       String[]
-  facing          String?
-  ageOfProperty   Int?
-  availableFrom   DateTime?
-  verified        Boolean         @default(false)
-  views           Int             @default(0)
-  featured        Boolean         @default(false)
+  evidenceUrls    String[]
+  status          GrievanceStatus @default(SUBMITTED)
+  assignedTo      String?
+  slaDeadline     DateTime?
+  resolvedAt      DateTime?
+  closureNote     String?
+  escalated       Boolean         @default(false)
+  escalationNote  String?
+  source          String          @default("web")
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
 
-  sellerId String
-  seller   User   @relation(fields: [sellerId], references: [id])
+  updates GrievanceUpdate[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  savedBy   SavedProperty[]
-  chatRooms ChatRoom[]
-  reviews   Review[]
-  leads     Lead[]
-
-  @@index([city, status])
-  @@index([listingType, status])
-  @@index([price])
-  @@index([bhk])
-}
-
-enum Role {
-  BUYER
-  SELLER
-  ADMIN
-}
-
-enum PropertyType {
-  APARTMENT
-  VILLA
-  INDEPENDENT_HOUSE
-  PLOT
-  COMMERCIAL
-  PG
-  STUDIO
-}
-
-enum ListingType {
-  BUY
-  RENT
-}
-
-enum PropertyStatus {
-  PENDING
-  APPROVED
-  REJECTED
-  SOLD
-  RENTED
-}
-
-enum Furnishing {
-  FULLY_FURNISHED
-  SEMI_FURNISHED
-  UNFURNISHED
-}
-
-model SavedProperty {
-  id         String   @id @default(cuid())
-  userId     String
-  propertyId String
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  createdAt  DateTime @default(now())
-
-  @@unique([userId, propertyId])
-}
-
-model ChatRoom {
-  id         String    @id @default(cuid())
-  propertyId String
-  buyerId    String
-  property   Property  @relation(fields: [propertyId], references: [id])
-  buyer      User      @relation("BuyerChats", fields: [buyerId], references: [id])
-  messages   Message[]
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-
-  @@unique([propertyId, buyerId])
-}
-
-model Message {
-  id         String   @id @default(cuid())
-  content    String
-  senderId   String
-  chatRoomId String
-  read       Boolean  @default(false)
-  sender     User     @relation("SentMessages", fields: [senderId], references: [id])
-  chatRoom   ChatRoom @relation(fields: [chatRoomId], references: [id], onDelete: Cascade)
-  createdAt  DateTime @default(now())
-}
-
-model Review {
-  id         String   @id @default(cuid())
-  rating     Int
-  comment    String?
-  userId     String
-  propertyId String
-  user       User     @relation(fields: [userId], references: [id])
-  property   Property @relation(fields: [propertyId], references: [id])
-  createdAt  DateTime @default(now())
-
-  @@unique([userId, propertyId])
-}
-
-model Lead {
-  id         String     @id @default(cuid())
-  name       String
-  phone      String
-  email      String?
-  message    String?    @db.Text
-  propertyId String
-  property   Property   @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  source     String     @default("website")
-  status     LeadStatus @default(NEW)
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
-
-  @@index([propertyId])
-  @@index([status])
+  @@index([districtId, status])
+  @@index([category])
   @@index([createdAt])
 }
 
-enum LeadStatus {
-  NEW
-  CONTACTED
-  INTERESTED
-  CONVERTED
+model GrievanceUpdate {
+  id          String    @id @default(cuid())
+  grievanceId String
+  grievance   Grievance @relation(fields: [grievanceId], references: [id], onDelete: Cascade)
+  status      GrievanceStatus
+  note        String
+  actorName   String?
+  createdAt   DateTime  @default(now())
+}
+
+enum GrievanceStatus {
+  SUBMITTED
+  ASSIGNED
+  IN_PROGRESS
+  RESOLVED
   CLOSED
+  ESCALATED
+}
+
+enum GrievanceCategory {
+  ROADS
+  WATER_SUPPLY
+  ELECTRICITY
+  HEALTH
+  EDUCATION
+  SCHEME_BENEFIT
+  RATION
+  LAND_RECORDS
+  PENSION
+  OTHER
+}
+
+// ─── SLA MONITORING ──────────────────────────────────────────────────────────
+
+model SLARecord {
+  id             String      @id @default(cuid())
+  departmentId   String
+  department     Department  @relation(fields: [departmentId], references: [id])
+  districtId     String?
+  district       District?   @relation(fields: [districtId], references: [id])
+  kpiName        String
+  kpiNameTamil   String
+  target         Float
+  actual         Float
+  unit           String      // "%", "days", "crore"
+  period         String      // "2024-Q4"
+  status         SLAStatus
+  ownerName      String?
+  dueDate        DateTime?
+  actionNote     String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  @@index([departmentId, period])
+  @@index([status])
+}
+
+enum SLAStatus {
+  ON_TARGET
+  VULNERABLE
+  JEOPARDY
+}
+
+// ─── ANOMALIES ───────────────────────────────────────────────────────────────
+
+model AnomalyFlag {
+  id           String         @id @default(cuid())
+  departmentId String
+  department   Department     @relation(fields: [departmentId], references: [id])
+  projectId    String?
+  project      Project?       @relation(fields: [projectId], references: [id])
+  type         AnomalyType
+  description  String         @db.Text
+  severity     AnomalySeverity
+  status       AnomalyStatus  @default(OPEN)
+  assignedTo   String?
+  resolvedNote String?
+  detectedAt   DateTime       @default(now())
+  resolvedAt   DateTime?
+  createdAt    DateTime       @default(now())
+
+  @@index([departmentId, status])
+}
+
+enum AnomalyType {
+  SPEND_SPIKE
+  VENDOR_CONCENTRATION
+  DELAYED_WITH_FULL_PAYOUT
+  DATA_MISMATCH
+  BENEFICIARY_DUPLICATION
+}
+
+enum AnomalySeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum AnomalyStatus {
+  OPEN
+  UNDER_REVIEW
+  FALSE_POSITIVE
+  ESCALATED
+  CLOSED
+}
+
+// ─── AUDIT LOG ───────────────────────────────────────────────────────────────
+
+model AuditLog {
+  id           String   @id @default(cuid())
+  actorId      String?
+  actor        User?    @relation(fields: [actorId], references: [id])
+  actorOffice  String?
+  action       String
+  entity       String
+  entityId     String
+  previousValue String? @db.Text
+  newValue      String? @db.Text
+  reasonCode   String?
+  ipAddress    String?
+  source       String?
+  createdAt    DateTime @default(now())
+
+  @@index([entity, entityId])
+  @@index([createdAt])
+}
+
+// ─── PROCUREMENT ─────────────────────────────────────────────────────────────
+
+model Tender {
+  id              String       @id @default(cuid())
+  tenderNo        String       @unique
+  title           String
+  departmentId    String
+  estimatedValue  Float
+  publishedAt     DateTime
+  closingAt       DateTime?
+  awardedTo       String?
+  awardedValue    Float?
+  stage           TenderStage  @default(PUBLISHED)
+  amendments      Int          @default(0)
+  bidderCount     Int          @default(0)
+  source          String       @default("tenders.tn.gov.in")
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([departmentId])
+  @@index([stage])
+}
+
+enum TenderStage {
+  PUBLISHED
+  BIDDING
+  EVALUATION
+  AWARDED
+  CANCELLED
 }

@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+Tamil:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -76,12 +76,55 @@
     @apply badge bg-slate-100 text-slate-600;
   }
 
+  /* SLA traffic-light badges */
+  .badge-sla-on-target {
+    @apply badge bg-sla-on-target-bg text-sla-on-target-fg;
+  }
+  .badge-sla-vulnerable {
+    @apply badge bg-sla-vulnerable-bg text-sla-vulnerable-fg;
+  }
+  .badge-sla-jeopardy {
+    @apply badge bg-sla-jeopardy-bg text-sla-jeopardy-fg;
+  }
+
   .section-title {
     @apply text-2xl font-bold text-slate-800;
   }
 
   .section-subtitle {
     @apply text-slate-500 mt-1;
+  }
+
+  /* KPI tile used on the dashboard */
+  .kpi-tile {
+    @apply bg-white rounded-xl shadow-card p-5 flex flex-col gap-2 hover:shadow-card-hover transition-shadow duration-300;
+  }
+
+  /* Trust marker strip (mandatory on data screens) */
+  .trust-strip {
+    @apply flex flex-wrap items-center gap-3 text-xs text-slate-500 py-2 border-t border-slate-100 mt-3;
+  }
+
+  /* Data table base */
+  .data-table {
+    @apply w-full text-sm border-collapse;
+  }
+  .data-table th {
+    @apply text-left text-xs font-semibold text-slate-500 uppercase tracking-wide px-4 py-3 bg-slate-50 border-b border-slate-200;
+  }
+  .data-table td {
+    @apply px-4 py-3 border-b border-slate-100 text-slate-700;
+  }
+  .data-table tr:last-child td {
+    @apply border-b-0;
+  }
+  .data-table tr:hover td {
+    @apply bg-primary-50/40;
+  }
+
+  /* Numeric cells always right-aligned */
+  .data-table .num {
+    @apply text-right font-data tabular-nums;
   }
 }
 

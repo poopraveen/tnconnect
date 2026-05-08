@@ -1,88 +1,60 @@
-/**
- * ─────────────────────────────────────────────────────────────────────────────
- * WHITE-LABEL BRAND CONFIG
- * ─────────────────────────────────────────────────────────────────────────────
- * Every value here can be overridden by a NEXT_PUBLIC_* environment variable.
- * To white-label for a new real-estate company, just set these env vars in
- * Vercel (or .env.local) — no code changes needed.
- *
- * Required env vars for a fresh deployment:
- *   NEXT_PUBLIC_BRAND_NAME
- *   NEXT_PUBLIC_BRAND_WORDMARK_PREFIX
- *   NEXT_PUBLIC_BRAND_WORDMARK_ACCENT
- *   NEXT_PUBLIC_BRAND_TAGLINE
- *   NEXT_PUBLIC_BRAND_SUPPORT_EMAIL
- *   NEXT_PUBLIC_BRAND_PHONE
- *   NEXT_PUBLIC_BRAND_OFFICE_ADDRESS
- *   NEXT_PUBLIC_BRAND_FOOTER_DESCRIPTION
- *   NEXT_PUBLIC_BRAND_DOMAIN
- *   NEXT_PUBLIC_APP_URL
- * ─────────────────────────────────────────────────────────────────────────────
- */
-
 function e(value: string | undefined, fallback: string): string {
   const t = value?.trim();
   return t && t.length > 0 ? t : fallback;
 }
 
-const name = e(process.env.NEXT_PUBLIC_BRAND_NAME, "PooPrav TrustNest");
+const name = e(process.env.NEXT_PUBLIC_BRAND_NAME, "TN Vettri");
 
 export const brand = {
-  /** Full product / legal name used in metadata, copyright, emails */
   name,
 
-  /** Logo split: prefix + accent color part (e.g. "PooPrav Trust" + "Nest") */
-  wordmarkPrefix: e(process.env.NEXT_PUBLIC_BRAND_WORDMARK_PREFIX, "PooPrav Trust"),
-  wordmarkAccent: e(process.env.NEXT_PUBLIC_BRAND_WORDMARK_ACCENT, "Nest"),
+  // Wordmark: "TN" prefix + "Vettri" accent
+  wordmarkPrefix: e(process.env.NEXT_PUBLIC_BRAND_WORDMARK_PREFIX, "TN"),
+  wordmarkAccent: e(process.env.NEXT_PUBLIC_BRAND_WORDMARK_ACCENT, "Vettri"),
 
-  /** One-line tagline shown in hero, meta tags, footer */
+  // Tamil: தமிழ்நாடு வெற்றி — Transparency platform tagline
   tagline: e(
     process.env.NEXT_PUBLIC_BRAND_TAGLINE,
-    "India's Most Trusted Real Estate Platform"
+    "Tamil Nadu Public Transparency Platform"
   ),
+  taglineTamil: "தமிழ்நாடு வெளிப்படைத்தன்மை தளம்",
 
-  /** 2-3 sentence footer description */
   footerDescription: e(
     process.env.NEXT_PUBLIC_BRAND_FOOTER_DESCRIPTION,
-    "India's most trusted real estate platform. Find verified properties for sale and rent across 50+ cities with AI-powered recommendations."
+    "Track Tamil Nadu government spending, project progress, scheme benefits, and grievance resolution in real time. Open data for every citizen."
   ),
 
-  /** Contact details */
-  supportEmail: e(process.env.NEXT_PUBLIC_BRAND_SUPPORT_EMAIL, "support@poopravtrustnest.in"),
-  phone: e(process.env.NEXT_PUBLIC_BRAND_PHONE, "1800-123-4567"),
+  supportEmail: e(process.env.NEXT_PUBLIC_BRAND_SUPPORT_EMAIL, "transparency@tn.gov.in"),
+  phone: e(process.env.NEXT_PUBLIC_BRAND_PHONE, "1800-425-1188"),
   officeAddress: e(
     process.env.NEXT_PUBLIC_BRAND_OFFICE_ADDRESS,
-    "Corporate Office, Anna Salai, Chennai 600002"
+    "Secretariat, Fort St. George, Chennai 600009"
   ),
 
-  /** Canonical domain (no trailing slash) */
-  domain: e(process.env.NEXT_PUBLIC_BRAND_DOMAIN, "https://poopravtrustnest.in"),
+  domain: e(process.env.NEXT_PUBLIC_BRAND_DOMAIN, "https://tnvettri.gov.in"),
 
-  /** Social media links — set to "" to hide an icon */
   social: {
     facebook:  e(process.env.NEXT_PUBLIC_BRAND_FACEBOOK,  "#"),
     twitter:   e(process.env.NEXT_PUBLIC_BRAND_TWITTER,   "#"),
-    instagram: e(process.env.NEXT_PUBLIC_BRAND_INSTAGRAM, "#"),
-    linkedin:  e(process.env.NEXT_PUBLIC_BRAND_LINKEDIN,  "#"),
     youtube:   e(process.env.NEXT_PUBLIC_BRAND_YOUTUBE,   "#"),
   },
 
-  /** SEO meta description */
   metaDescription: e(
     process.env.NEXT_PUBLIC_BRAND_META_DESCRIPTION,
-    `Find your dream home with ${name}. Buy, sell, or rent apartments, villas, plots, and commercial properties across India. Verified listings, AI recommendations, and transparent pricing.`
+    "Track Tamil Nadu budget expenditure, government project progress, scheme beneficiaries, and file grievances. Open, transparent governance for every citizen."
   ),
 
-  /** Footer city list — override to focus on specific regions */
-  footerCities: (process.env.NEXT_PUBLIC_BRAND_FOOTER_CITIES ?? "")
-    .split(",")
-    .map((c) => c.trim())
-    .filter(Boolean)
-    .slice(0, 8)
-    .concat(
-      ["Mumbai", "Delhi", "Bangalore", "Hyderabad", "Chennai", "Pune", "Kolkata", "Ahmedabad"]
-    )
-    .slice(0, 8),
+  // The 38 TN districts used across the app
+  districts: [
+    "Ariyalur","Chengalpattu","Chennai","Coimbatore","Cuddalore",
+    "Dharmapuri","Dindigul","Erode","Kallakurichi","Kancheepuram",
+    "Kanyakumari","Karur","Krishnagiri","Madurai","Mayiladuthurai",
+    "Nagapattinam","Namakkal","Nilgiris","Perambalur","Pudukkottai",
+    "Ramanathapuram","Ranipet","Salem","Sivaganga","Tenkasi",
+    "Thanjavur","Theni","Thoothukudi","Tiruchirappalli","Tirunelveli",
+    "Tirupathur","Tiruppur","Tiruvallur","Tiruvannamalai","Vellore",
+    "Viluppuram","Virudhunagar","Tiruvarur",
+  ],
 } as const;
 
 export function pageTitleWithTagline(): string {

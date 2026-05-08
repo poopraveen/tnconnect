@@ -2,301 +2,400 @@ export const dynamic = "force-dynamic";
 
 import type { Metadata } from "next";
 import Link from "next/link";
-import Image from "next/image";
 import {
-  Search, Shield, TrendingUp, Star, ArrowRight,
-  Building2, Home, MapPin, BedDouble, Users, CheckCircle,
-  ChevronRight, Sparkles,
+  ArrowRight, BarChart3, MapPin, Briefcase, Users,
+  MessageSquare, FileSearch, Shield, TrendingUp,
+  ChevronRight, ExternalLink, Clock,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { prisma } from "@/lib/prisma";
-import { deserializeProperty } from "@/lib/db";
-import PropertyCard from "@/components/PropertyCard";
-import { formatPrice, INDIAN_CITIES } from "@/lib/utils";
-import type { Property } from "@/types";
-import SearchBar from "@/components/SearchBar";
+import KpiTile from "@/components/KpiTile";
 import { brand, pageTitleWithTagline } from "@/lib/brand";
 
 export const metadata: Metadata = {
   title: pageTitleWithTagline(),
+  description: brand.metaDescription,
 };
 
-async function getFeaturedProperties() {
-  try {
-    const props = await prisma.property.findMany({
-      where: { status: "APPROVED", featured: true },
-      include: {
-        seller: { select: { id: true, name: true, email: true, phone: true, avatar: true, isVerified: true } },
-      },
-      orderBy: { createdAt: "desc" },
-      take: 6,
-    });
-    return props.map(deserializeProperty);
-  } catch {
-    return [];
-  }
-}
-
-async function getStats() {
-  try {
-    const [properties, users] = await Promise.all([
-      prisma.property.count({ where: { status: "APPROVED" } }),
-      prisma.user.count(),
-    ]);
-    return { properties, users };
-  } catch {
-    return { properties: 10000, users: 50000 };
-  }
-}
-
-const PROPERTY_CATEGORIES = [
-  { icon: Building2, label: "Apartment", type: "APARTMENT", color: "bg-blue-100 text-blue-700", count: "2.4K+" },
-  { icon: Home, label: "Villa", type: "VILLA", color: "bg-orange-100 text-orange-700", count: "890+" },
-  { icon: Home, label: "Independent House", type: "INDEPENDENT_HOUSE", color: "bg-emerald-100 text-emerald-700", count: "1.2K+" },
-  { icon: MapPin, label: "Plot", type: "PLOT", color: "bg-purple-100 text-purple-700", count: "3.1K+" },
-  { icon: Building2, label: "Commercial", type: "COMMERCIAL", color: "bg-red-100 text-red-700", count: "560+" },
-  { icon: Users, label: "PG / Co-living", type: "PG", color: "bg-teal-100 text-teal-700", count: "4.5K+" },
-];
-
-const TOP_CITIES = [
-  { name: "Mumbai", image: "https://images.unsplash.com/photo-1529253355930-ddbe423a2ac7?w=400&q=80", listings: "12K+" },
-  { name: "Bangalore", image: "https://images.unsplash.com/photo-1596176530529-78163a4f7af2?w=400&q=80", listings: "9.4K+" },
-  { name: "Delhi", image: "https://images.unsplash.com/photo-1587474260584-136574528ed5?w=400&q=80", listings: "11K+" },
-  { name: "Hyderabad", image: "https://images.unsplash.com/photo-1569596082827-c5e4df3e4d3b?w=400&q=80", listings: "7.2K+" },
-  { name: "Pune", image: "https://images.unsplash.com/photo-1580581096469-10c7a77cb8b5?w=400&q=80", listings: "6.8K+" },
-  { name: "Chennai", image: "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=400&q=80", listings: "5.3K+" },
-];
-
-const HOW_IT_WORKS = [
+// Real seed data from data/tn_real_data.md (live DB values will replace these)
+const BUDGET_KPIS = [
   {
-    step: "01",
-    title: "Search & Filter",
-    desc: "Use our smart search to find properties matching your exact needs — BHK, budget, locality.",
-    color: "bg-blue-100",
-    textColor: "text-blue-700",
+    label: "Total Budget 2024-25",
+    labelTamil: "மொத்த பட்ஜெட்",
+    value: "₹4,12,504 Cr",
+    target: "₹4,12,504 Cr",
+    delta: 12,
+    deltaLabel: "vs 2023-24",
+    status: "on-target" as const,
+    source: "tnbudget.tn.gov.in",
+    lastUpdated: "Feb 2024",
   },
   {
-    step: "02",
-    title: "Explore & Compare",
-    desc: "View detailed listings with photos, virtual tours, maps, and neighbourhood insights.",
-    color: "bg-orange-100",
-    textColor: "text-orange-700",
+    label: "Capital Expenditure",
+    labelTamil: "மூலதன செலவு",
+    value: "₹47,681 Cr",
+    target: "₹50,000 Cr",
+    delta: 12.1,
+    deltaLabel: "YoY growth",
+    status: "vulnerable" as const,
+    source: "tnbudget.tn.gov.in",
+    lastUpdated: "Feb 2024",
   },
   {
-    step: "03",
-    title: "Connect & Close",
-    desc: "Chat with verified sellers directly. Schedule visits and close deals with confidence.",
-    color: "bg-emerald-100",
-    textColor: "text-emerald-700",
+    label: "State GSDP 2024-25",
+    labelTamil: "மாநில உள்நாட்டு உற்பத்தி",
+    value: "₹31.55 L Cr",
+    delta: 11.19,
+    deltaLabel: "real growth",
+    status: "on-target" as const,
+    source: "mospi.gov.in",
+    lastUpdated: "Mar 2024",
+  },
+  {
+    label: "Fiscal Deficit",
+    labelTamil: "நிதி பற்றாக்குறை",
+    value: "3.4% GSDP",
+    target: "3.0% GSDP",
+    status: "vulnerable" as const,
+    source: "prsindia.org",
+    lastUpdated: "Feb 2024",
+  },
+  {
+    label: "Magalir Urimai Beneficiaries",
+    labelTamil: "மகளிர் உரிமைத் தொகை",
+    value: "1.31 Cr Women",
+    target: "1.5 Cr",
+    delta: 16.1,
+    deltaLabel: "vs Phase 1",
+    status: "on-target" as const,
+    source: "kmut.tn.gov.in",
+    lastUpdated: "Feb 2026",
+  },
+  {
+    label: "CM Breakfast Students",
+    labelTamil: "முதலமைச்சர் காலை உணவு",
+    value: "20.73 Lakh",
+    target: "25 Lakh",
+    delta: 30,
+    deltaLabel: "attendance rise",
+    status: "on-target" as const,
+    source: "tnsocialwelfare.tn.gov.in",
+    lastUpdated: "Jul 2024",
+  },
+  {
+    label: "MTM Health Beneficiaries",
+    labelTamil: "மக்களை தேடி மருத்துவம்",
+    value: "1.86 Cr People",
+    target: "2 Cr",
+    status: "on-target" as const,
+    source: "nhm.tn.gov.in",
+    lastUpdated: "Aug 2024",
+  },
+  {
+    label: "eProcurement Value (All Time)",
+    labelTamil: "மின் கொள்முதல்",
+    value: "₹7,53,403 Cr",
+    delta: undefined,
+    status: "neutral" as const,
+    source: "tenders.tn.gov.in",
+    lastUpdated: "2024",
   },
 ];
 
-export default async function HomePage() {
-  const [featured, stats] = await Promise.all([getFeaturedProperties(), getStats()]);
+const DEPT_LEADERBOARD = [
+  { name: "School Education",          allocation: 54327,  spent: 49200,  pct: 90 },
+  { name: "Social Welfare & Nutrition", allocation: 34548,  spent: 32100,  pct: 93 },
+  { name: "Agriculture & Allied",       allocation: 24232,  spent: 21800,  pct: 90 },
+  { name: "Transport (Roads)",          allocation: 23828,  spent: 19400,  pct: 81 },
+  { name: "Energy",                     allocation: 21606,  spent: 21200,  pct: 98 },
+];
 
+const QUICK_LINKS = [
+  { href: "/expenditure", icon: BarChart3,      label: "Track Spending",      labelTa: "செலவு கண்காணிப்பு",   color: "bg-blue-100 text-blue-700" },
+  { href: "/scorecards",  icon: MapPin,          label: "District Scorecards", labelTa: "மாவட்ட மதிப்பீடு",    color: "bg-emerald-100 text-emerald-700" },
+  { href: "/projects",    icon: Briefcase,       label: "Project Tracker",     labelTa: "திட்ட கண்காணிப்பு",   color: "bg-violet-100 text-violet-700" },
+  { href: "/schemes",     icon: Users,           label: "Scheme Benefits",     labelTa: "திட்ட நன்மைகள்",      color: "bg-amber-100 text-amber-700" },
+  { href: "/grievances",  icon: MessageSquare,   label: "File Grievance",      labelTa: "புகார் பதிவு",         color: "bg-rose-100 text-rose-700" },
+  { href: "/tenders",     icon: FileSearch,      label: "Procurement",         labelTa: "கொள்முதல்",            color: "bg-cyan-100 text-cyan-700" },
+];
+
+const TRUST_STATS = [
+  { value: "43",           label: "Departments Tracked",   labelTa: "துறைகள்" },
+  { value: "38",           label: "Districts Covered",     labelTa: "மாவட்டங்கள்" },
+  { value: "7.53L+ Cr",    label: "Tenders on Portal",     labelTa: "டெண்டர் மதிப்பு" },
+  { value: "1.31 Cr",      label: "Women Beneficiaries",   labelTa: "பெண் பயனாளிகள்" },
+];
+
+export default function HomePage() {
   return (
     <div className="min-h-screen bg-surface">
       <Navbar />
 
-      {/* Hero Section */}
+      {/* Hero — Trust Snapshot */}
       <section className="bg-hero-gradient relative overflow-hidden">
-        <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-400/20 rounded-full blur-3xl" />
           <div className="absolute -bottom-20 -left-20 w-60 h-60 bg-sky-400/20 rounded-full blur-3xl" />
         </div>
-
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="text-center mb-10">
             <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm text-white text-sm px-4 py-2 rounded-full mb-6 border border-white/20">
-              <Sparkles className="w-4 h-4 text-yellow-300" />
-              <span>AI-powered property recommendations</span>
+              <Shield className="w-4 h-4 text-yellow-300" />
+              <span>Open Data · Verified Sources · Real Time</span>
             </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 leading-tight">
-              Find Your{" "}
-              <span className="text-yellow-300">Dream Home</span>
-              <br />
-              in India
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-3 leading-tight">
+              Tamil Nadu<br />
+              <span className="text-yellow-300">Public Transparency Platform</span>
             </h1>
-            <p className="text-blue-100 text-lg md:text-xl max-w-2xl mx-auto">
-              {stats.properties.toLocaleString("en-IN")}+ verified properties across 50+ cities.
-              Buy, rent, or sell with complete transparency.
+            <p className="text-white/80 font-tamil text-lg mb-1">தமிழ்நாடு வெளிப்படைத்தன்மை தளம்</p>
+            <p className="text-blue-100 text-base max-w-2xl mx-auto mt-3">
+              Track every rupee spent, every scheme beneficiary reached, every project milestone,
+              and every grievance resolved — district by district.
             </p>
           </div>
 
-          {/* Search */}
-          <SearchBar />
-
-          {/* Quick Stats */}
-          <div className="mt-10 flex flex-wrap justify-center gap-8 text-center">
-            {[
-              { value: `${(stats.properties / 1000).toFixed(0)}K+`, label: "Active Listings" },
-              { value: "50+", label: "Cities Covered" },
-              { value: `${(stats.users / 1000).toFixed(0)}K+`, label: "Happy Customers" },
-              { value: "100%", label: "Verified Properties" },
-            ].map((stat) => (
-              <div key={stat.label} className="text-white">
-                <div className="text-2xl font-bold">{stat.value}</div>
-                <div className="text-blue-200 text-sm">{stat.label}</div>
+          {/* Trust stats bar */}
+          <div className="mt-8 flex flex-wrap justify-center gap-8 text-center">
+            {TRUST_STATS.map((s) => (
+              <div key={s.label} className="text-white">
+                <div className="text-2xl font-bold font-data">{s.value}</div>
+                <div className="text-blue-200 text-sm">{s.label}</div>
+                <div className="text-blue-300/70 text-xs font-tamil">{s.labelTa}</div>
               </div>
             ))}
+          </div>
+
+          {/* View My Locality CTA */}
+          <div className="mt-10 flex justify-center">
+            <Link
+              href="/scorecards"
+              className="flex items-center gap-2 bg-white text-primary-800 font-bold px-8 py-3.5 rounded-xl hover:bg-blue-50 transition-colors shadow-lg text-base"
+            >
+              View My Locality
+              <ArrowRight className="w-5 h-5" />
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* Property Categories */}
-      <section className="py-14 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h2 className="section-title">Browse by Property Type</h2>
-            <p className="section-subtitle">Find the perfect type of property for you</p>
-          </div>
-        </div>
+      {/* Quick Navigation */}
+      <section className="py-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {PROPERTY_CATEGORIES.map((cat) => (
+          {QUICK_LINKS.map((q) => (
             <Link
-              key={cat.type}
-              href={`/properties?propertyType=${cat.type}`}
+              key={q.href}
+              href={q.href}
               className="card p-4 text-center hover:border-primary-200 border border-transparent transition-all group"
             >
-              <div className={`w-12 h-12 rounded-xl ${cat.color} flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform`}>
-                <cat.icon className="w-5 h-5" />
+              <div className={`w-12 h-12 rounded-xl ${q.color} flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform`}>
+                <q.icon className="w-5 h-5" />
               </div>
               <p className="font-semibold text-sm text-slate-700 group-hover:text-primary-700 transition-colors">
-                {cat.label}
+                {q.label}
               </p>
-              <p className="text-xs text-slate-400 mt-0.5">{cat.count} listings</p>
+              <p className="text-xs text-slate-400 mt-0.5 font-tamil">{q.labelTa}</p>
             </Link>
           ))}
         </div>
       </section>
 
-      {/* Featured Properties */}
-      {featured.length > 0 && (
-        <section className="py-14 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-          <div className="flex items-center justify-between mb-8">
+      {/* KPI Dashboard */}
+      <section className="py-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="section-title">Budget & Welfare Snapshot</h2>
+            <p className="section-subtitle">Key figures from official TN government sources</p>
+          </div>
+          <Link href="/expenditure" className="flex items-center gap-1 text-sm text-primary-700 font-medium hover:text-primary-900 transition-colors">
+            Full Expenditure <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {BUDGET_KPIS.map((kpi) => (
+            <KpiTile
+              key={kpi.label}
+              {...kpi}
+              auditHref={kpi.source ? `/audit?source=${kpi.source}` : undefined}
+              downloadHref="/data/tn_real_data"
+            />
+          ))}
+        </div>
+      </section>
+
+      {/* Department Leaderboard */}
+      <section className="py-10 bg-white">
+        <div className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+          <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="section-title">Featured Properties</h2>
-              <p className="section-subtitle">Hand-picked premium listings</p>
+              <h2 className="section-title">Department Spending (2024-25)</h2>
+              <p className="section-subtitle">Top 5 departments by allocation</p>
+            </div>
+            <Link href="/expenditure" className="flex items-center gap-1 text-sm text-primary-700 font-medium hover:text-primary-900">
+              All 43 Depts <ChevronRight className="w-4 h-4" />
+            </Link>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th className="w-8">#</th>
+                  <th>Department</th>
+                  <th className="num">Allocation (₹ Cr)</th>
+                  <th className="num">Spent (₹ Cr)</th>
+                  <th>Utilisation</th>
+                </tr>
+              </thead>
+              <tbody>
+                {DEPT_LEADERBOARD.map((d, i) => (
+                  <tr key={d.name}>
+                    <td className="font-bold text-slate-400">{i + 1}</td>
+                    <td className="font-medium text-slate-800">{d.name}</td>
+                    <td className="num">{d.allocation.toLocaleString("en-IN")}</td>
+                    <td className="num">{d.spent.toLocaleString("en-IN")}</td>
+                    <td>
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden max-w-24">
+                          <div
+                            className={`h-full rounded-full ${d.pct >= 90 ? "bg-success-600" : d.pct >= 80 ? "bg-warning-600" : "bg-danger-600"}`}
+                            style={{ width: `${d.pct}%` }}
+                          />
+                        </div>
+                        <span className="text-xs font-medium text-slate-600 tabular-nums">{d.pct}%</span>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="trust-strip">
+            <span>📊 tnbudget.tn.gov.in</span>
+            <span>🕐 Feb 2024</span>
+            <a href="/audit" className="flex items-center gap-0.5 hover:text-primary-600">
+              <ExternalLink className="w-3 h-3" /> Audit Trace
+            </a>
+          </p>
+        </div>
+      </section>
+
+      {/* District Spotlight + CTA */}
+      <section className="py-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+          {/* District map placeholder */}
+          <div className="card p-6 flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold text-slate-800 text-lg">District Spotlight</h3>
+              <Link href="/scorecards" className="text-sm text-primary-600 hover:text-primary-800 flex items-center gap-1">
+                Full Map <ChevronRight className="w-4 h-4" />
+              </Link>
+            </div>
+            <div className="bg-primary-50 rounded-xl flex items-center justify-center h-48 border-2 border-dashed border-primary-200">
+              <div className="text-center">
+                <MapPin className="w-10 h-10 text-primary-300 mx-auto mb-2" />
+                <p className="text-sm text-primary-600 font-medium">Interactive District Map</p>
+                <p className="text-xs text-primary-400 mt-1">38 districts · Choropleth by score</p>
+                <Link href="/scorecards" className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-white bg-primary-600 px-3 py-1.5 rounded-lg hover:bg-primary-700 transition-colors">
+                  Explore Map <ArrowRight className="w-3 h-3" />
+                </Link>
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                { label: "Chennai",    score: 82, rank: 3 },
+                { label: "Coimbatore", score: 79, rank: 7 },
+                { label: "Madurai",    score: 74, rank: 12 },
+              ].map((d) => (
+                <Link key={d.label} href={`/scorecards?district=${d.label}`} className="bg-slate-50 rounded-lg p-3 hover:bg-primary-50 transition-colors text-center">
+                  <p className="text-base font-bold text-slate-800">{d.score}</p>
+                  <p className="text-xs text-slate-500">{d.label}</p>
+                  <p className="text-xs text-slate-400">Rank #{d.rank}</p>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* Grievance CTA */}
+          <div className="card p-6 flex flex-col gap-4">
+            <h3 className="font-bold text-slate-800 text-lg">Citizen Grievance Portal</h3>
+            <p className="text-sm text-slate-500 leading-relaxed">
+              File a complaint about roads, water, electricity, scheme benefits, health, or education.
+              Track resolution status with SLA timers. Escalate if unresolved.
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { label: "Roads",         count: "1,204 open", color: "bg-red-50 border-red-200 text-red-700" },
+                { label: "Water Supply",  count: "876 open",   color: "bg-blue-50 border-blue-200 text-blue-700" },
+                { label: "Electricity",   count: "543 open",   color: "bg-amber-50 border-amber-200 text-amber-700" },
+                { label: "Scheme Benefit",count: "2,109 open", color: "bg-violet-50 border-violet-200 text-violet-700" },
+              ].map((c) => (
+                <Link key={c.label} href={`/grievances?category=${c.label}`} className={`rounded-lg border p-3 hover:opacity-80 transition-opacity ${c.color}`}>
+                  <p className="text-xs font-semibold">{c.label}</p>
+                  <p className="text-xs mt-0.5 opacity-70">{c.count}</p>
+                </Link>
+              ))}
             </div>
             <Link
-              href="/properties?featured=true"
-              className="flex items-center gap-1 text-sm text-primary-700 font-medium hover:text-primary-900 transition-colors"
+              href="/grievances/new"
+              className="btn-primary justify-center mt-auto"
             >
-              View All <ArrowRight className="w-4 h-4" />
+              <MessageSquare className="w-4 h-4" />
+              File a Grievance
             </Link>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featured.map((property) => (
-              <PropertyCard key={property.id} property={property as any} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Top Cities */}
-      <section className="py-14 bg-white">
-        <div className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h2 className="section-title">Explore Top Cities</h2>
-              <p className="section-subtitle">India's most sought-after real estate markets</p>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {TOP_CITIES.map((city) => (
-              <Link
-                key={city.name}
-                href={`/properties?city=${city.name}`}
-                className="group relative rounded-xl overflow-hidden aspect-square cursor-pointer"
-              >
-                <Image
-                  src={city.image}
-                  alt={city.name}
-                  fill
-                  className="object-cover group-hover:scale-110 transition-transform duration-500"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-3">
-                  <p className="text-white font-bold text-sm">{city.name}</p>
-                  <p className="text-white/70 text-xs">{city.listings} listings</p>
-                </div>
-              </Link>
-            ))}
+            <p className="trust-strip">
+              <Clock className="w-3 h-3" />
+              <span>SLA: 30 days standard resolution</span>
+              <span>·</span>
+              <span>Escalation available</span>
+            </p>
           </div>
         </div>
       </section>
 
-      {/* How It Works */}
-      <section className="py-14 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <div className="text-center mb-12">
-          <h2 className="section-title">How {brand.name} works</h2>
-          <p className="section-subtitle">Simple, transparent, trusted</p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {HOW_IT_WORKS.map((step, i) => (
-            <div key={i} className="text-center relative">
-              {i < 2 && (
-                <div className="hidden md:block absolute top-10 left-full w-full h-0.5 border-t-2 border-dashed border-slate-200 -translate-x-8" />
-              )}
-              <div className={`w-20 h-20 ${step.color} rounded-2xl flex items-center justify-center mx-auto mb-5`}>
-                <span className={`text-2xl font-black ${step.textColor}`}>{step.step}</span>
-              </div>
-              <h3 className="font-bold text-slate-800 text-lg mb-2">{step.title}</h3>
-              <p className="text-slate-500 text-sm leading-relaxed max-w-xs mx-auto">{step.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Trust Indicators */}
-      <section className="py-14 bg-primary-950 text-white">
+      {/* Transparency Commitment */}
+      <section className="py-12 bg-primary-950 text-white">
         <div className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+          <div className="text-center mb-10">
+            <h2 className="text-2xl font-bold text-white mb-2">Our Transparency Commitment</h2>
+            <p className="text-blue-200 text-sm">Every data point is sourced, timestamped, and auditable</p>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
             {[
-              { icon: Shield, title: "100% Verified", desc: "Every listing is manually verified by our team before going live." },
-              { icon: Star, title: "4.8/5 Rating", desc: "Trusted by over 50,000 home buyers and sellers across India." },
-              { icon: TrendingUp, title: "Best Price Guarantee", desc: "We ensure you get the most transparent and competitive pricing." },
+              { icon: Shield,    title: "Verified Sources Only",   desc: "All data linked to official government portals — PFMS, tnbudget.tn.gov.in, CPGRAMS, and district sites." },
+              { icon: TrendingUp,title: "Real-Time Updates",       desc: "Budget release %, grievance counts, and scheme disbursements refresh automatically from live APIs." },
+              { icon: FileSearch,title: "Full Audit Trail",        desc: "Every metric has a traceable source, change history, and responsible office — visible to all citizens." },
             ].map(({ icon: Icon, title, desc }) => (
               <div key={title} className="flex flex-col items-center">
                 <div className="w-14 h-14 rounded-2xl bg-primary-800 flex items-center justify-center mb-4">
                   <Icon className="w-6 h-6 text-blue-300" />
                 </div>
-                <h3 className="font-bold text-white text-lg mb-2">{title}</h3>
+                <h3 className="font-bold text-white text-base mb-2">{title}</h3>
                 <p className="text-blue-200 text-sm max-w-xs">{desc}</p>
               </div>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* Seller CTA */}
-      <section className="py-14 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <div className="bg-gradient-to-r from-brand-orange to-orange-500 rounded-2xl p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="text-white">
-            <h2 className="text-2xl md:text-3xl font-bold mb-2">
-              List Your Property for Free
-            </h2>
-            <p className="text-orange-100 max-w-md">
-              Reach 50,000+ active buyers and renters. Post your property in minutes
-              and get inquiries from verified buyers.
-            </p>
-            <div className="flex flex-wrap gap-3 mt-4">
-              {["Free listing", "Verified buyers", "AI-powered matching", "Direct chat"].map((f) => (
-                <span key={f} className="flex items-center gap-1 text-sm text-orange-100">
-                  <CheckCircle className="w-3.5 h-3.5" />
-                  {f}
-                </span>
-              ))}
-            </div>
+          <div className="mt-10 flex flex-wrap justify-center gap-4">
+            <a href="https://tnbudget.tn.gov.in" target="_blank" rel="noopener noreferrer"
+               className="flex items-center gap-1.5 text-xs text-blue-300 hover:text-white border border-blue-800 px-3 py-1.5 rounded-lg transition-colors">
+              <ExternalLink className="w-3 h-3" /> tnbudget.tn.gov.in
+            </a>
+            <a href="https://pfms.nic.in" target="_blank" rel="noopener noreferrer"
+               className="flex items-center gap-1.5 text-xs text-blue-300 hover:text-white border border-blue-800 px-3 py-1.5 rounded-lg transition-colors">
+              <ExternalLink className="w-3 h-3" /> pfms.nic.in
+            </a>
+            <a href="https://pgportal.gov.in" target="_blank" rel="noopener noreferrer"
+               className="flex items-center gap-1.5 text-xs text-blue-300 hover:text-white border border-blue-800 px-3 py-1.5 rounded-lg transition-colors">
+              <ExternalLink className="w-3 h-3" /> pgportal.gov.in
+            </a>
+            <a href="https://tenders.tn.gov.in" target="_blank" rel="noopener noreferrer"
+               className="flex items-center gap-1.5 text-xs text-blue-300 hover:text-white border border-blue-800 px-3 py-1.5 rounded-lg transition-colors">
+              <ExternalLink className="w-3 h-3" /> tenders.tn.gov.in
+            </a>
+            <a href="https://egramswaraj.gov.in" target="_blank" rel="noopener noreferrer"
+               className="flex items-center gap-1.5 text-xs text-blue-300 hover:text-white border border-blue-800 px-3 py-1.5 rounded-lg transition-colors">
+              <ExternalLink className="w-3 h-3" /> egramswaraj.gov.in
+            </a>
           </div>
-          <Link
-            href="/register?role=SELLER"
-            className="bg-white text-brand-orange font-bold px-8 py-3 rounded-xl hover:bg-orange-50 transition-colors flex items-center gap-2 flex-shrink-0 whitespace-nowrap"
-          >
-            Post Property Free
-            <ChevronRight className="w-4 h-4" />
-          </Link>
         </div>
       </section>
 
