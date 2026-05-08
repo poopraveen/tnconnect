@@ -7,36 +7,35 @@ import {
   Send, ChevronRight, ExternalLink, Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { GRIEVANCES } from "@/lib/tn-official-data";
 
 const STATS = [
-  { label: "Total Filed",       labelTa: "மொத்தம் பதிவு",    value: "3,42,180", sub: "FY 2024-25",           color: "text-primary-700",  bg: "bg-primary-50",  icon: MessageSquare },
-  { label: "Resolved (30 days)",labelTa: "30 நாளில் தீர்வு",  value: "2,94,120", sub: "85.9% resolution rate", color: "text-emerald-700", bg: "bg-emerald-50", icon: CheckCircle },
-  { label: "Pending",           labelTa: "நிலுவையில்",         value: "32,640",   sub: "9.5% of total",        color: "text-amber-700",   bg: "bg-amber-50",   icon: Clock },
-  { label: "Escalated",         labelTa: "மேல்முறையீடு",       value: "15,420",   sub: "4.5% escalation rate",  color: "text-red-700",     bg: "bg-red-50",     icon: AlertTriangle },
+  { label: "Total Filed",        labelTa: "மொத்தம் பதிவு",    value: GRIEVANCES.totalFiled.toLocaleString("en-IN"),    sub: "FY 2024-25",                        color: "text-primary-700", bg: "bg-primary-50",  icon: MessageSquare },
+  { label: "Resolved (30 days)", labelTa: "30 நாளில் தீர்வு",  value: GRIEVANCES.totalResolved.toLocaleString("en-IN"), sub: `${GRIEVANCES.resolutionPct}% resolution rate`, color: "text-emerald-700", bg: "bg-emerald-50", icon: CheckCircle },
+  { label: "Pending",            labelTa: "நிலுவையில்",         value: GRIEVANCES.pending.toLocaleString("en-IN"),       sub: `${((GRIEVANCES.pending / GRIEVANCES.totalFiled) * 100).toFixed(1)}% of total`, color: "text-amber-700", bg: "bg-amber-50", icon: Clock },
+  { label: "Escalated",          labelTa: "மேல்முறையீடு",       value: GRIEVANCES.escalated.toLocaleString("en-IN"),     sub: `${((GRIEVANCES.escalated / GRIEVANCES.totalFiled) * 100).toFixed(1)}% escalation rate`, color: "text-red-700", bg: "bg-red-50", icon: AlertTriangle },
 ];
 
-const CATEGORIES = [
-  { id: "roads",   label: "Roads & Infrastructure", labelTa: "சாலை & உள்கட்டமைப்பு",  count: 78420, pct: 23, color: "bg-orange-500",  resolved: 88 },
-  { id: "water",   label: "Water Supply",            labelTa: "குடிநீர் வழங்கல்",        count: 62340, pct: 18, color: "bg-blue-500",    resolved: 91 },
-  { id: "health",  label: "Health Services",         labelTa: "சுகாதார சேவைகள்",          count: 45180, pct: 13, color: "bg-red-500",     resolved: 87 },
-  { id: "elec",    label: "Electricity",             labelTa: "மின்சாரம்",                count: 51200, pct: 15, color: "bg-yellow-500",  resolved: 94 },
-  { id: "edu",     label: "Education",               labelTa: "கல்வி",                   count: 38940, pct: 11, color: "bg-violet-500",  resolved: 85 },
-  { id: "ration",  label: "Ration / PDS",            labelTa: "ரேஷன் / பொது விநியோகம்", count: 34100, pct: 10, color: "bg-amber-500",   resolved: 90 },
-  { id: "pension", label: "Pension & Social Security",labelTa: "ஓய்வூதியம்",              count: 20480, pct: 6,  color: "bg-teal-500",    resolved: 89 },
-  { id: "other",   label: "Land Records & Others",   labelTa: "நில ஆவணங்கள் & பிற",      count: 11520, pct: 4,  color: "bg-slate-400",   resolved: 82 },
-];
+const CATEGORY_COLORS = ["bg-orange-500","bg-blue-500","bg-red-500","bg-yellow-500","bg-violet-500","bg-emerald-500","bg-teal-500","bg-slate-400"];
+const CATEGORIES = GRIEVANCES.byCategory.map((c, i) => ({
+  id: c.cat.toLowerCase().replace(/\s+/g, "-"),
+  label: c.cat,
+  labelTa: ["சாலை & உள்கட்டமைப்பு","சாலை உள்கட்டமைப்பு","மின்சாரம்","குடிநீர் வழங்கல்","சுகாதார சேவை","கல்வி","சமூக நலன்","நில ஆவணங்கள்"][i] || c.cat,
+  count: c.count,
+  pct: Math.round((c.count / GRIEVANCES.totalFiled) * 100),
+  color: CATEGORY_COLORS[i % CATEGORY_COLORS.length],
+  resolved: Math.round(c.resolvedPct),
+}));
 
 const MONTHLY_RESOLUTION = [76, 79, 82, 84, 85, 87, 88, 86, 89, 90, 88, 85];
 const MONTHS = ["Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar"];
 
-const SLA_COMPLIANCE = [
-  { dept: "Revenue Dept.",       target: 30, actual: 22, pct: 95 },
-  { dept: "Water Board (TWAD)",  target: 21, actual: 18, pct: 91 },
-  { dept: "TANGEDCO",            target: 15, actual: 12, pct: 96 },
-  { dept: "Health & FW",         target: 30, actual: 27, pct: 88 },
-  { dept: "School Education",    target: 30, actual: 29, pct: 86 },
-  { dept: "Highways Dept.",      target: 45, actual: 48, pct: 72 },
-];
+const SLA_COMPLIANCE = GRIEVANCES.byDept.slice(0, 6).map(d => ({
+  dept: d.dept,
+  target: 30,
+  actual: Math.round(d.avgDays),
+  pct: Math.round((d.resolved / d.filed) * 100),
+}));
 
 export default function GrievancesPage() {
   const [form, setForm] = useState({ name: "", phone: "", district: "", category: "", title: "", description: "" });

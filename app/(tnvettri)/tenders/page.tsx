@@ -2,23 +2,30 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { FileSearch, TrendingUp, CheckCircle, Clock, Users, ExternalLink, Download, Building } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { TENDERS as TENDERS_DATA } from "@/lib/tn-official-data";
 
 export const metadata: Metadata = { title: "Procurement & Tenders | TN Vettri" };
 
 const STATS = [
-  { label: "Total Tenders (All Time)", labelTa: "மொத்த டெண்டர்கள்",    value: "7,53,374",    sub: "On eProcurement portal",    color: "text-primary-700", bg: "bg-primary-50" },
-  { label: "Total Value",              labelTa: "மொத்த மதிப்பு",         value: "₹7,53,403 Cr", sub: "All-time eProcurement",      color: "text-emerald-700", bg: "bg-emerald-50" },
-  { label: "Active Tenders",           labelTa: "செயலில் உள்ள டெண்டர்", value: "4,218",        sub: "Open for bids right now",    color: "text-blue-700",   bg: "bg-blue-50" },
-  { label: "Avg. Bidders/Tender",      labelTa: "சராசரி போட்டியாளர்கள்", value: "6.4",         sub: "Healthy competition index",  color: "text-violet-700", bg: "bg-violet-50" },
+  { label: "Total Tenders (All Time)", labelTa: "மொத்த டெண்டர்கள்",    value: TENDERS_DATA.totalTenders.toLocaleString("en-IN"), sub: "On eProcurement portal",    color: "text-primary-700", bg: "bg-primary-50" },
+  { label: "Total Value",              labelTa: "மொத்த மதிப்பு",         value: `₹${(TENDERS_DATA.totalValueCrore / 1000).toFixed(0)}K Cr`, sub: "All-time eProcurement", color: "text-emerald-700", bg: "bg-emerald-50" },
+  { label: "Active Tenders",           labelTa: "செயலில் உள்ள டெண்டர்", value: TENDERS_DATA.activeTenders.toLocaleString("en-IN"), sub: "Open for bids right now", color: "text-blue-700", bg: "bg-blue-50" },
+  { label: "Avg. Bidders/Tender",      labelTa: "சராசரி போட்டியாளர்கள்", value: TENDERS_DATA.avgBidders.toString(), sub: "Healthy competition index", color: "text-violet-700", bg: "bg-violet-50" },
 ];
 
-const STAGE_DATA = [
-  { stage: "Published",   count: 4218,  color: "bg-blue-500",    light: "bg-blue-50",    fg: "text-blue-700",    pct: 28 },
-  { stage: "Bidding",     count: 1842,  color: "bg-amber-500",   light: "bg-amber-50",   fg: "text-amber-700",   pct: 12 },
-  { stage: "Evaluation",  count:  934,  color: "bg-violet-500",  light: "bg-violet-50",  fg: "text-violet-700",  pct: 6  },
-  { stage: "Awarded",     count: 7320,  color: "bg-emerald-500", light: "bg-emerald-50", fg: "text-emerald-700", pct: 48 },
-  { stage: "Cancelled",   count:  926,  color: "bg-red-400",     light: "bg-red-50",     fg: "text-red-600",     pct: 6  },
-];
+const STAGE_DATA = TENDERS_DATA.stageDistribution.map((s, i) => {
+  const colors = [
+    { color: "bg-blue-500",    light: "bg-blue-50",    fg: "text-blue-700"    },
+    { color: "bg-amber-500",   light: "bg-amber-50",   fg: "text-amber-700"   },
+    { color: "bg-violet-500",  light: "bg-violet-50",  fg: "text-violet-700"  },
+    { color: "bg-slate-400",   light: "bg-slate-50",   fg: "text-slate-600"   },
+    { color: "bg-emerald-500", light: "bg-emerald-50", fg: "text-emerald-700" },
+    { color: "bg-teal-500",    light: "bg-teal-50",    fg: "text-teal-700"    },
+    { color: "bg-green-500",   light: "bg-green-50",   fg: "text-green-700"   },
+    { color: "bg-red-400",     light: "bg-red-50",     fg: "text-red-600"     },
+  ];
+  return { stage: s.stage, count: s.count, pct: Math.round(s.pct), ...colors[i % colors.length] };
+});
 
 const TENDERS = [
   {

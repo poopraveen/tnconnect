@@ -2,49 +2,19 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { MapPin, TrendingUp, TrendingDown, Award, ExternalLink, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { DISTRICT_SCORES } from "@/lib/tn-official-data";
 
 export const metadata: Metadata = { title: "District Scorecards | TN Vettri" };
 
-const DISTRICTS = [
-  { name: "Chennai",           nameTa: "சென்னை",            score: 84, rank: 1,  fin: 88, svc: 85, impact: 82, infra: 86, gov: 80, trend: "up" },
-  { name: "Coimbatore",        nameTa: "கோயம்புத்தூர்",     score: 81, rank: 2,  fin: 84, svc: 80, impact: 79, infra: 82, gov: 82, trend: "up" },
-  { name: "Tiruchirappalli",   nameTa: "திருச்சிராப்பள்ளி", score: 78, rank: 3,  fin: 79, svc: 79, impact: 77, infra: 78, gov: 77, trend: "up" },
-  { name: "Madurai",           nameTa: "மதுரை",              score: 76, rank: 4,  fin: 77, svc: 76, impact: 75, infra: 77, gov: 76, trend: "same" },
-  { name: "Salem",             nameTa: "சேலம்",              score: 75, rank: 5,  fin: 76, svc: 74, impact: 76, infra: 74, gov: 75, trend: "up" },
-  { name: "Erode",             nameTa: "ஈரோடு",              score: 74, rank: 6,  fin: 75, svc: 73, impact: 74, infra: 75, gov: 73, trend: "up" },
-  { name: "Tiruppur",          nameTa: "திருப்பூர்",         score: 73, rank: 7,  fin: 74, svc: 72, impact: 73, infra: 74, gov: 72, trend: "up" },
-  { name: "Vellore",           nameTa: "வேலூர்",             score: 72, rank: 8,  fin: 72, svc: 73, impact: 71, infra: 72, gov: 73, trend: "same" },
-  { name: "Thanjavur",         nameTa: "தஞ்சாவூர்",          score: 71, rank: 9,  fin: 71, svc: 72, impact: 70, infra: 71, gov: 71, trend: "up" },
-  { name: "Tirunelveli",       nameTa: "திருநெல்வேலி",       score: 70, rank: 10, fin: 70, svc: 71, impact: 69, infra: 70, gov: 70, trend: "same" },
-  { name: "Kancheepuram",      nameTa: "காஞ்சிபுரம்",        score: 69, rank: 11, fin: 70, svc: 68, impact: 69, infra: 69, gov: 68, trend: "up" },
-  { name: "Chengalpattu",      nameTa: "செங்கல்பட்டு",       score: 69, rank: 12, fin: 69, svc: 70, impact: 68, infra: 69, gov: 70, trend: "up" },
-  { name: "Namakkal",          nameTa: "நாமக்கல்",           score: 68, rank: 13, fin: 68, svc: 68, impact: 67, infra: 68, gov: 68, trend: "same" },
-  { name: "Tiruvannamalai",    nameTa: "திருவண்ணாமலை",       score: 67, rank: 14, fin: 67, svc: 67, impact: 67, infra: 66, gov: 68, trend: "up" },
-  { name: "Dindigul",          nameTa: "திண்டுக்கல்",        score: 67, rank: 15, fin: 66, svc: 68, impact: 66, infra: 67, gov: 67, trend: "same" },
-  { name: "Tiruvallur",        nameTa: "திருவள்ளூர்",        score: 66, rank: 16, fin: 66, svc: 66, impact: 65, infra: 67, gov: 66, trend: "up" },
-  { name: "Cuddalore",         nameTa: "கடலூர்",             score: 65, rank: 17, fin: 65, svc: 66, impact: 64, infra: 65, gov: 65, trend: "same" },
-  { name: "Kanyakumari",       nameTa: "கன்னியாகுமரி",       score: 65, rank: 18, fin: 65, svc: 65, impact: 65, infra: 64, gov: 65, trend: "up" },
-  { name: "Dharmapuri",        nameTa: "தர்மபுரி",           score: 64, rank: 19, fin: 64, svc: 64, impact: 63, infra: 64, gov: 64, trend: "same" },
-  { name: "Krishnagiri",       nameTa: "கிருஷ்ணகிரி",        score: 63, rank: 20, fin: 63, svc: 63, impact: 62, infra: 63, gov: 63, trend: "up" },
-  { name: "Theni",             nameTa: "தேனி",               score: 63, rank: 21, fin: 63, svc: 62, impact: 63, infra: 62, gov: 63, trend: "same" },
-  { name: "Sivaganga",         nameTa: "சிவகங்கை",           score: 62, rank: 22, fin: 62, svc: 62, impact: 61, infra: 62, gov: 62, trend: "same" },
-  { name: "Karur",             nameTa: "கரூர்",              score: 62, rank: 23, fin: 62, svc: 62, impact: 61, infra: 62, gov: 62, trend: "up" },
-  { name: "Nagapattinam",      nameTa: "நாகப்பட்டினம்",      score: 61, rank: 24, fin: 61, svc: 61, impact: 60, infra: 61, gov: 62, trend: "same" },
-  { name: "Thoothukudi",       nameTa: "தூத்துக்குடி",       score: 61, rank: 25, fin: 61, svc: 60, impact: 61, infra: 62, gov: 61, trend: "up" },
-  { name: "Viluppuram",        nameTa: "விழுப்புரம்",         score: 60, rank: 26, fin: 60, svc: 60, impact: 59, infra: 60, gov: 60, trend: "same" },
-  { name: "Ranipet",           nameTa: "ராணிப்பேட்டை",       score: 60, rank: 27, fin: 60, svc: 59, impact: 60, infra: 60, gov: 61, trend: "up" },
-  { name: "Tiruvarur",         nameTa: "திருவாரூர்",          score: 59, rank: 28, fin: 59, svc: 60, impact: 58, infra: 59, gov: 59, trend: "same" },
-  { name: "Ramanathapuram",    nameTa: "ராமநாதபுரம்",        score: 58, rank: 29, fin: 58, svc: 58, impact: 57, infra: 58, gov: 59, trend: "same" },
-  { name: "Pudukkottai",       nameTa: "புதுக்கோட்டை",       score: 57, rank: 30, fin: 57, svc: 57, impact: 57, infra: 57, gov: 58, trend: "up" },
-  { name: "Nilgiris",          nameTa: "நீலகிரி",            score: 57, rank: 31, fin: 57, svc: 57, impact: 56, infra: 57, gov: 58, trend: "same" },
-  { name: "Perambalur",        nameTa: "பெரம்பலூர்",         score: 56, rank: 32, fin: 56, svc: 56, impact: 55, infra: 56, gov: 57, trend: "same" },
-  { name: "Mayiladuthurai",    nameTa: "மயிலாடுதுறை",        score: 56, rank: 33, fin: 55, svc: 57, impact: 55, infra: 56, gov: 56, trend: "up" },
-  { name: "Tenkasi",           nameTa: "தென்காசி",           score: 55, rank: 34, fin: 55, svc: 55, impact: 54, infra: 55, gov: 56, trend: "same" },
-  { name: "Ariyalur",          nameTa: "அரியலூர்",           score: 54, rank: 35, fin: 54, svc: 54, impact: 53, infra: 54, gov: 55, trend: "up" },
-  { name: "Kallakurichi",      nameTa: "கள்ளக்குறிச்சி",     score: 53, rank: 36, fin: 53, svc: 53, impact: 52, infra: 53, gov: 54, trend: "same" },
-  { name: "Tirupathur",        nameTa: "திருப்பத்தூர்",       score: 52, rank: 37, fin: 52, svc: 52, impact: 51, infra: 52, gov: 52, trend: "same" },
-  { name: "Virudhunagar",      nameTa: "விருதுநகர்",          score: 51, rank: 38, fin: 50, svc: 52, impact: 50, infra: 51, gov: 52, trend: "down" },
-];
+// Map central data to local shape (deduplicate Thanjavur)
+const DISTRICTS = DISTRICT_SCORES
+  .filter(d => d.code !== "THA2")
+  .slice(0, 38)
+  .map(d => ({
+    name: d.name, nameTa: d.nameTa, score: d.overall, rank: d.rank,
+    fin: d.fin, svc: d.svc, impact: d.cit, infra: d.inf, gov: d.gov,
+    trend: d.rank <= 10 ? "up" : d.rank >= 35 ? "down" : "same",
+  }));
 
 function scoreGrade(score: number) {
   if (score >= 80) return { grade: "A+", color: "bg-emerald-100 text-emerald-700 border-emerald-200" };

@@ -9,46 +9,50 @@ import {
 } from "lucide-react";
 import KpiTile from "@/components/KpiTile";
 import { brand, pageTitleWithTagline } from "@/lib/brand";
+import { BUDGET, MACRO, SCHEMES, TENDERS, DEPT_BUDGETS } from "@/lib/tn-official-data";
 
 export const metadata: Metadata = {
   title: pageTitleWithTagline(),
   description: brand.metaDescription,
 };
 
-// Real seed data from data/tn_real_data.md (live DB values will replace these)
+const magalir  = SCHEMES.find(s => s.id === "magalir-urimai")!;
+const cmBreak  = SCHEMES.find(s => s.id === "cm-breakfast")!;
+const mtm      = SCHEMES.find(s => s.id === "makkalai-thedi")!;
+
 const BUDGET_KPIS = [
   {
     label: "Total Budget 2024-25",
     labelTamil: "மொத்த பட்ஜெட்",
-    value: "₹4,12,504 Cr",
-    target: "₹4,12,504 Cr",
-    progress: 78,
+    value: `₹${(BUDGET.totalBudget_crore / 1000).toFixed(0)}K Cr`,
+    target: `₹${(BUDGET.totalBudget_crore / 1000).toFixed(0)}K Cr`,
+    progress: BUDGET.utilisationPct,
     delta: 12,
     deltaLabel: "vs 2023-24",
     status: "on-target" as const,
-    source: "tnbudget.tn.gov.in",
-    lastUpdated: "Feb 2024",
+    source: BUDGET.source,
+    lastUpdated: BUDGET.lastUpdated,
   },
   {
     label: "Capital Expenditure",
     labelTamil: "மூலதன செலவு",
-    value: "₹47,681 Cr",
-    target: "₹50,000 Cr",
-    progress: 95,
+    value: `₹${(BUDGET.capitalOutlay_crore / 1000).toFixed(1)}K Cr`,
+    target: "₹1,00,000 Cr",
+    progress: Math.round((BUDGET.capitalOutlay_crore / 100000) * 100),
     delta: 12.1,
     deltaLabel: "YoY growth",
     status: "vulnerable" as const,
-    source: "tnbudget.tn.gov.in",
-    lastUpdated: "Feb 2024",
+    source: BUDGET.source,
+    lastUpdated: BUDGET.lastUpdated,
   },
   {
     label: "State GSDP 2024-25",
     labelTamil: "மாநில உள்நாட்டு உற்பத்தி",
-    value: "₹31.55 L Cr",
-    delta: 11.19,
+    value: `₹${(MACRO.gsdp_crore / 100000).toFixed(2)} L Cr`,
+    delta: MACRO.gsdp_growth_real,
     deltaLabel: "real growth",
     status: "on-target" as const,
-    source: "mospi.gov.in",
+    source: MACRO.source,
     lastUpdated: "Mar 2024",
   },
   {
@@ -63,55 +67,54 @@ const BUDGET_KPIS = [
   {
     label: "Magalir Urimai Beneficiaries",
     labelTamil: "மகளிர் உரிமைத் தொகை",
-    value: "1.31 Cr Women",
-    target: "1.5 Cr",
-    progress: 87,
+    value: `${(magalir.beneficiaries / 10000000).toFixed(2)} Cr Women`,
+    target: `${(magalir.target / 10000000).toFixed(1)} Cr`,
+    progress: Math.round((magalir.beneficiaries / magalir.target) * 100),
     delta: 16.1,
     deltaLabel: "vs Phase 1",
     status: "on-target" as const,
-    source: "kmut.tn.gov.in",
-    lastUpdated: "Feb 2026",
+    source: magalir.source,
+    lastUpdated: magalir.launched,
   },
   {
     label: "CM Breakfast Students",
     labelTamil: "முதலமைச்சர் காலை உணவு",
-    value: "20.73 Lakh",
-    target: "25 Lakh",
-    progress: 83,
+    value: `${(cmBreak.beneficiaries / 100000).toFixed(2)} Lakh`,
+    target: `${(cmBreak.target / 100000).toFixed(0)} Lakh`,
+    progress: Math.round((cmBreak.beneficiaries / cmBreak.target) * 100),
     delta: 30,
     deltaLabel: "attendance rise",
     status: "on-target" as const,
-    source: "tnsocialwelfare.tn.gov.in",
-    lastUpdated: "Jul 2024",
+    source: cmBreak.source,
+    lastUpdated: cmBreak.launched,
   },
   {
     label: "MTM Health Beneficiaries",
     labelTamil: "மக்களை தேடி மருத்துவம்",
-    value: "1.86 Cr People",
-    target: "2 Cr",
-    progress: 93,
+    value: `${(mtm.beneficiaries / 10000000).toFixed(2)} Cr People`,
+    target: `${(mtm.target / 10000000).toFixed(0)} Cr`,
+    progress: Math.round((mtm.beneficiaries / mtm.target) * 100),
     status: "on-target" as const,
-    source: "nhm.tn.gov.in",
-    lastUpdated: "Aug 2024",
+    source: mtm.source,
+    lastUpdated: mtm.launched,
   },
   {
     label: "eProcurement Value (All Time)",
     labelTamil: "மின் கொள்முதல்",
-    value: "₹7,53,403 Cr",
+    value: `₹${(TENDERS.totalValueCrore / 1000).toFixed(0)}K Cr`,
     delta: undefined,
     status: "neutral" as const,
-    source: "tenders.tn.gov.in",
-    lastUpdated: "2024",
+    source: TENDERS.source,
+    lastUpdated: TENDERS.lastUpdated,
   },
 ];
 
-const DEPT_LEADERBOARD = [
-  { name: "School Education",          allocation: 54327,  spent: 49200,  pct: 90 },
-  { name: "Social Welfare & Nutrition", allocation: 34548,  spent: 32100,  pct: 93 },
-  { name: "Agriculture & Allied",       allocation: 24232,  spent: 21800,  pct: 90 },
-  { name: "Transport (Roads)",          allocation: 23828,  spent: 19400,  pct: 81 },
-  { name: "Energy",                     allocation: 21606,  spent: 21200,  pct: 98 },
-];
+const DEPT_LEADERBOARD = DEPT_BUDGETS.slice(0, 5).map(d => ({
+  name: d.dept,
+  allocation: d.total,
+  spent: d.spent,
+  pct: d.utilPct,
+}));
 
 const QUICK_LINKS = [
   { href: "/expenditure", icon: BarChart3,      label: "Track Spending",      labelTa: "செலவு கண்காணிப்பு",   color: "bg-blue-100 text-blue-700" },

@@ -2,23 +2,30 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Briefcase, CheckCircle, Clock, AlertTriangle, XCircle, MapPin, ExternalLink, Download } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PROJECTS as PROJ_DATA } from "@/lib/tn-official-data";
 
 export const metadata: Metadata = { title: "Project Tracker | TN Vettri" };
 
-const STAGE_PIPELINE = [
-  { stage: "Sanctioned",       count: 1248, color: "bg-slate-400",   light: "bg-slate-50",   fg: "text-slate-700",   pct: 16 },
-  { stage: "Tendered",         count:  892, color: "bg-blue-500",    light: "bg-blue-50",    fg: "text-blue-700",    pct: 11 },
-  { stage: "Work Order",       count:  634, color: "bg-violet-500",  light: "bg-violet-50",  fg: "text-violet-700",  pct: 8  },
-  { stage: "In Progress",      count: 3420, color: "bg-amber-500",   light: "bg-amber-50",   fg: "text-amber-700",   pct: 43 },
-  { stage: "Completed",        count: 1980, color: "bg-emerald-500", light: "bg-emerald-50", fg: "text-emerald-700", pct: 25 },
-  { stage: "Quality Verified", count:  742, color: "bg-teal-500",    light: "bg-teal-50",    fg: "text-teal-700",    pct: 9  },
+const STAGE_COLORS = [
+  { color: "bg-slate-400",   light: "bg-slate-50",   fg: "text-slate-700"   },
+  { color: "bg-blue-500",    light: "bg-blue-50",    fg: "text-blue-700"    },
+  { color: "bg-violet-500",  light: "bg-violet-50",  fg: "text-violet-700"  },
+  { color: "bg-amber-500",   light: "bg-amber-50",   fg: "text-amber-700"   },
+  { color: "bg-emerald-500", light: "bg-emerald-50", fg: "text-emerald-700" },
+  { color: "bg-teal-500",    light: "bg-teal-50",    fg: "text-teal-700"    },
 ];
 
+const STAGE_PIPELINE = PROJ_DATA.stageBreakdown.map((s, i) => ({
+  stage: s.stage, count: s.count,
+  pct: Math.round((s.count / PROJ_DATA.total) * 100),
+  ...STAGE_COLORS[i % STAGE_COLORS.length],
+}));
+
 const STATUS_STATS = [
-  { label: "On Track",   labelTa: "சரியான நேரத்தில்", count: 5648, pct: 71, color: "bg-emerald-500", light: "bg-emerald-50", fg: "text-emerald-700", icon: CheckCircle },
-  { label: "Delayed",    labelTa: "தாமதமானது",         count: 1430, pct: 18, color: "bg-amber-500",   light: "bg-amber-50",   fg: "text-amber-700",   icon: Clock },
-  { label: "Stalled",    labelTa: "நிறுத்தப்பட்டது",   count:  716, pct:  9, color: "bg-red-500",     light: "bg-red-50",     fg: "text-red-700",     icon: AlertTriangle },
-  { label: "Cancelled",  labelTa: "ரத்து செய்யப்பட்டது",count: 122, pct:  2, color: "bg-slate-400",  light: "bg-slate-50",   fg: "text-slate-600",   icon: XCircle },
+  { label: "On Track",  labelTa: "சரியான நேரத்தில்",  count: PROJ_DATA.onTrack,   pct: Math.round((PROJ_DATA.onTrack / PROJ_DATA.total) * 100),   color: "bg-emerald-500", light: "bg-emerald-50", fg: "text-emerald-700", icon: CheckCircle },
+  { label: "Delayed",   labelTa: "தாமதமானது",          count: PROJ_DATA.delayed,   pct: Math.round((PROJ_DATA.delayed / PROJ_DATA.total) * 100),   color: "bg-amber-500",   light: "bg-amber-50",   fg: "text-amber-700",   icon: Clock },
+  { label: "Stalled",   labelTa: "நிறுத்தப்பட்டது",    count: PROJ_DATA.stalled,   pct: Math.round((PROJ_DATA.stalled / PROJ_DATA.total) * 100),   color: "bg-red-500",     light: "bg-red-50",     fg: "text-red-700",     icon: AlertTriangle },
+  { label: "Cancelled", labelTa: "ரத்து செய்யப்பட்டது", count: PROJ_DATA.cancelled, pct: Math.round((PROJ_DATA.cancelled / PROJ_DATA.total) * 100), color: "bg-slate-400",   light: "bg-slate-50",   fg: "text-slate-600",   icon: XCircle },
 ];
 
 const PROJECTS = [

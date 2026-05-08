@@ -2,16 +2,19 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Shield, AlertTriangle, CheckCircle, Clock, ExternalLink, Download, Eye, Database } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { GRIEVANCES, TENDERS, BUDGET, SCHEMES, PROJECTS } from "@/lib/tn-official-data";
 
 export const metadata: Metadata = { title: "Audit Trail | TN Vettri" };
 
+const magalir = SCHEMES.find(s => s.id === "magalir-urimai")!;
+
 const SOURCES = [
-  { id: "tnbudget",  name: "tnbudget.tn.gov.in",  label: "Budget",      icon: "💰", records: 48420, lastSync: "Feb 2025",   health: "live" },
-  { id: "pfms",      name: "pfms.nic.in",          label: "Expenditure", icon: "📊", records: 3241800, lastSync: "May 2025", health: "live" },
-  { id: "pgportal",  name: "pgportal.gov.in",      label: "Grievances",  icon: "📝", records: 342180, lastSync: "May 2025",  health: "live" },
-  { id: "tenders",   name: "tenders.tn.gov.in",    label: "Procurement", icon: "📋", records: 753374, lastSync: "May 2025",  health: "live" },
-  { id: "nhm",       name: "nhm.tn.gov.in",        label: "Health",      icon: "🏥", records: 186000, lastSync: "Aug 2024",  health: "stale" },
-  { id: "kmut",      name: "kmut.tn.gov.in",       label: "Magalir",     icon: "👩", records: 131000, lastSync: "Feb 2026",  health: "live" },
+  { id: "tnbudget",  name: "tnbudget.tn.gov.in",  label: "Budget",      icon: "💰", records: 43,                          lastSync: BUDGET.lastUpdated,    health: "live"  },
+  { id: "pfms",      name: "pfms.nic.in",          label: "Expenditure", icon: "📊", records: 3241800,                     lastSync: "May 2025",             health: "live"  },
+  { id: "pgportal",  name: "pgportal.gov.in",      label: "Grievances",  icon: "📝", records: GRIEVANCES.totalFiled,       lastSync: GRIEVANCES.lastUpdated, health: "live"  },
+  { id: "tenders",   name: "tenders.tn.gov.in",    label: "Procurement", icon: "📋", records: TENDERS.totalTenders,        lastSync: TENDERS.lastUpdated,    health: "live"  },
+  { id: "pfms2",     name: "pfms.nic.in/projects", label: "Projects",    icon: "🏗️", records: PROJECTS.total,              lastSync: PROJECTS.lastUpdated,   health: "live"  },
+  { id: "kmut",      name: "kmut.tn.gov.in",       label: "Magalir",     icon: "👩", records: magalir.beneficiaries,       lastSync: magalir.launched,       health: "live"  },
 ];
 
 const ANOMALIES = [
