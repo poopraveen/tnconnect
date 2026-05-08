@@ -1,4 +1,4 @@
-export type Role = "BUYER" | "SELLER" | "ADMIN";
+export type Role = "BUYER" | "SELLER" | "ADMIN" | "CITIZEN" | "OFFICER" | "AUDITOR";
 export type PropertyType =
   | "APARTMENT"
   | "VILLA"

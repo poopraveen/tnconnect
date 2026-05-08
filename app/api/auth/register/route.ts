@@ -8,7 +8,7 @@ const RegisterSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8).max(100),
   phone: z.string().optional(),
-  role: z.enum(["CITIZEN", "OFFICER"]).default("CITIZEN"),
+  role: z.enum(["BUYER", "SELLER", "CITIZEN", "OFFICER"]).default("BUYER"),
 });
 
 export async function POST(req: NextRequest) {
